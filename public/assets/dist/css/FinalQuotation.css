@@ -1,0 +1,87 @@
+.final-tbl .Head {
+    background-color: rgb(199, 239, 255) !important;
+}
+.final-tbl th,
+.final-tbl td {
+    border: 1px solid #575757;
+}
+
+.final-tbl .final {
+    text-align: left;
+}
+
+.final-tbl {
+    padding-top: 50px;
+    margin: auto;
+    margin-top: 20px;
+    width: fit-content;
+    text-align: center;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 20px;
+    border-collapse: separate;
+    padding: 20px;
+}
+
+.final-tbl tr td {
+    min-width: 175px;
+}
+
+#sr {
+    width: 300px;
+}
+
+#comp {
+    width: 700px;
+    text-align: left;
+}
+
+#unit {
+    width: 250px;
+}
+
+#cost {
+    width: 250px;
+}
+
+#mrc {
+    width: 250px;
+}
+
+#esds-img {
+    height: 150px;
+    width: 350px;
+}
+
+.tbl_tc {
+    margin-top: 20px;
+    max-width: 2058px;
+    margin: auto;
+}
+
+.tbl_tc p {
+    padding: 20px;
+}
+
+.tbl_tc th {
+    /* background-color: rgb(199, 239, 255); */
+    font-size: 25px;
+    text-align: left;
+    padding-left: 20px;
+}
+
+.tbl_tc .myTextArea {
+    width: 100%;
+    height: max-content;
+    overflow: auto;
+    font: 20px "cambria";
+    color: grey;
+    padding: 20px;
+}
+
+.tbl_tc .assump {
+    height: max-content;
+}
+
+.DiscountedMrc {
+    text-wrap: nowrap;
+}

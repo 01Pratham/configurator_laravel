@@ -1,4 +1,4 @@
-<form action="" method="post" onsubmit="event.preventDefault()">
+<form action="" method="post" onsubmit="event.preventDefault();return (event.keyCode || event.charCode)==13">
     <div class="input-group bg-transparent">
         <input type="text" name="searchBox" id="searchBox" class="form-control" aria-describedby="">
         <button class="input-group-text p-0 form-control col-sm-1 bg-light" id="searchButton"

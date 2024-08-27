@@ -27,8 +27,7 @@ class CreateNewController extends Controller
     private function getFormData($id)
     {
         try {
-
-            $jsonData = SavedEstimate::findOrFail($id)->data;
+            $jsonData = SavedEstimate::where("is_deleted", 0)->findOrFail($id)->data;
             return new GetFormDataService($jsonData);
         } catch (\Exception $e) {
             return new class

@@ -26,7 +26,7 @@ class StoreInTableController extends Controller
             DB::transaction(function () use ($id) {
                 DB::table('tbl_discount_data')->where('quot_id', $id)->delete();
                 DB::table('tbl_saved_estimates')->where('id', $id)->delete();
-            }); 
+            });
 
             return response()->json(['message' => 'Deleted'], 200);
         } catch (\Exception $e) {
@@ -63,7 +63,7 @@ class StoreInTableController extends Controller
                     'exculsions' => json_encode($tc['exculsions']),
                     'assumptions' => json_encode($tc['assumptions']),
                     'last_changed_by' => $empCode,
-                    'date_updated' => $date,
+
                 ];
 
                 DB::table('tbl_saved_estimates')
@@ -77,10 +77,9 @@ class StoreInTableController extends Controller
                     'version' => $version,
                     'owner' => $empCode,
                     'last_changed_by' => $empCode,
-                    'date_created' => $date,
-                    'date_updated' => $date,
                     'contract_period' => $request->input('period'),
                     'total_upfront' => $request->input('total'),
+                    'discounted_upfront' => $request->input('discounted_upfront', '0'),
                     'terms' => json_encode($tc['terms']),
                     'exculsions' => json_encode($tc['exculsions']),
                     'assumptions' => json_encode($tc['assumptions']),
@@ -134,7 +133,7 @@ class StoreInTableController extends Controller
                 DB::table('tbl_discount_data')->insert([
                     'quot_id' => $data['id'] ?? session("edit_id"),
                     'discounted_data' => $data['discountedData'],
-                    'approved_status' => '',
+                    'approved_status' => 'NA',
                     'discounted_mrc' => intval($data['discounted_upfront']),
                     'approved_by' => $data['approved_by'] ?? null,
                 ]);

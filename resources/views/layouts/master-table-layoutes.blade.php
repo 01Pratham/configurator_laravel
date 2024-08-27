@@ -6,13 +6,6 @@
         <div class="col-md-4 except">
             @include('components.search-box', ['searchableClass' => $searchable['class']])
         </div>
-
-        <div class="ml-auto except">
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#MyModal">
-                Create Rate Card
-            </button>
-            @include('components.modal')
-        </div>
     </div>
 
     @include('components.data-table', [

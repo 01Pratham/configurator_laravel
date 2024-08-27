@@ -27,7 +27,7 @@
             <select name="{{ $array['name'] }}[region]" id="region_{{ $array['id'] }}" class="border-0 text-primary">
                 @foreach ($regions as $region)
                     @if ($region['id'] != 0)
-                        <option value = '{{ $region['id'] }}'>{{ $region['region'] }} </option>
+                        <option value = '{{ $region['id'] }}'>{{ $region['region_name'] }} </option>
                     @endif
                 @endforeach
             </select>

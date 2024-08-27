@@ -453,12 +453,24 @@ table th {
     font-size: 12px;
 }
 
-#navbar {
+/* #navbar {
     height: 4.1rem;
     position: fixed;
     width: -webkit-fill-available;
     transition: backdrop-filter 0.3s ease;
     backdrop-filter: blur(10px);
+} */
+
+#navbar {
+    height: 4.1rem;
+    position: fixed;
+    width: calc(
+        100vw - 4.6rem
+    ); /* Adjusts width to account for additional spacing */
+    transition: backdrop-filter 0.3s ease;
+    backdrop-filter: blur(10px);
+    top: 0; /* Positions the navbar at the top of the viewport */
+    left: 0; /* Positions the navbar at the left edge of the viewport */
 }
 
 .nav-funcs {
@@ -565,5 +577,9 @@ table th {
 @media (max-width: 991px) {
     .category-container {
         width: 100% !important;
+    }
+
+    #navbar {
+        width: 100vw;
     }
 }

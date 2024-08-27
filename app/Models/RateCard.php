@@ -15,6 +15,7 @@ class RateCard extends Model
         "rate_card_name",
         "card_type",
         "listing",
+        "created_by",
         "is_active",
     ];
 }

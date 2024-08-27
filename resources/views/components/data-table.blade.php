@@ -30,27 +30,30 @@
                                                                 id="status_{{ $Arr['id'] }}"
                                                                 {{ $val == false ? '' : 'Checked ' }}>
                                                         @else
-                                                            {{ $val }}
+                                                            <?= $val ?>
                                                         @endif
                                                     </td>
                                                 @endif
                                             @endforeach
-                                            <td class="text-end">
-                                                <div class="except drodown">
-                                                    <a data-bs-toggle="dropdown" href="#" class="btn p-1"
-                                                        aria-expanded="false">
-                                                        <span class="fa fa-bars" aria-hidden="true"></span>
-                                                    </a>
-                                                    <div class="except dropdown-menu dropdown-menu-end text-light"
-                                                        style="min-width: 8rem; z-index:1 ">
-                                                        @foreach ($Arr['action'] as $action)
-                                                            <a href="{{ $action['path'] }}"
-                                                                class="dropdown-item"><i>{{ $action['name'] }}</i><i
-                                                                    class="{{ $action['icon'] }} float-right pt-1"></i></a>
-                                                        @endforeach
+                                            @if (isset($Arr['action']))
+                                                <td class="text-end">
+                                                    <div class="except drodown">
+                                                        <a data-bs-toggle="dropdown" href="#" class="btn p-1"
+                                                            aria-expanded="false">
+                                                            <span class="fa fa-bars" aria-hidden="true"></span>
+                                                        </a>
+                                                        <div class="except dropdown-menu dropdown-menu-end text-light"
+                                                            style="min-width: 8rem; z-index:1 ">
+                                                            @foreach ($Arr['action'] as $action)
+                                                                <a href="{{ $action['path'] }}"
+                                                                    class="dropdown-item"><i>{{ $action['name'] }}</i><i
+                                                                        class="{{ $action['icon'] }} float-right pt-1"></i></a>
+                                                            @endforeach
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
+                                                </td>
+                                            @endif
+
                                         </tr>
                                         @php
                                             $count += 1;

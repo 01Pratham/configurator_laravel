@@ -30,7 +30,7 @@ body {
 }
 
 .panel {
-    min-height: 380px;
+    /* min-height: 380px; */
     min-width: 300px;
     width: 35%;
     box-shadow: 20px 20px 80px rgb(218, 218, 218);
@@ -78,6 +78,7 @@ a:hover {
 }
 
 input[type="text"],
+input[type="email"],
 input[type="password"] {
     border: none;
     outline: none;
@@ -135,4 +136,12 @@ a[target="_blank"] {
     .bordert:after {
         left: 25%;
     }
+}
+
+.valid-msg{
+    display: block;
+    width: 100%;
+    margin-top: .25rem;
+    font-size: .875em;
+    color: #198754;
 }

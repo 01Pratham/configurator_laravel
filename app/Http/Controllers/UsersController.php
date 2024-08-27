@@ -17,9 +17,13 @@ class UsersController extends Controller
             "action" => 'ACTION',
         ];
 
-        $users = LoginMaster::select(["first_name", "last_name", "employee_code", "designation", "crm_user_id"])->where("manager_code", session()->get('user')["crm_user_id"])->get()->toArray();
-        $content_header = ['Users' => route('Users')];
+        $table_body = [];
 
+        $users = LoginMaster::select(["first_name", "last_name", "employee_code", "designation", "crm_user_id"])
+            ->where("manager_code", session()->get('user')["crm_user_id"])
+            ->get()
+            ->toArray();
+        $content_header = ['Users' => route('Users')];
 
         foreach ($users as $key => $user) {
             $table_body[$key] = arrange_keys($table_head, $user);
@@ -41,8 +45,6 @@ class UsersController extends Controller
             "key" => "name",
             "class" => "name"
         ];
-
-        // return view("layouts.users-table", compact("table_head", "table_body", "exceptional_keys"));
         return view("layouts.master-table-layoutes", compact("table_head", "table_body", "exceptional_keys", "searchable", "content_header"));
     }
 }

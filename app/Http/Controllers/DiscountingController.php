@@ -17,12 +17,25 @@ class DiscountingController extends Controller
     const STRG_PATTERN = "/strg_[1-9]/";
     const ESTMT_PATTERN = "/estmtname|period|region/";
 
+    // public function __construct(Request $req)
+    // {
+    //     $this->edit_id = $req->edit_id;
+    //     $data = SavedEstimate::where("id", $this->edit_id)->first()->toArray();
+    //     $this->Request = json_decode($data["data"], true);
+    //     $this->listID = $this->Request["product_list"];
+    // }
+
     public function __construct(Request $req)
     {
         $this->edit_id = $req->edit_id;
-        $data = SavedEstimate::where("id", $this->edit_id)->first()->toArray();
-        $this->Request = json_decode($data["data"], true);
-        $this->listID = $this->Request["product_list"];
+        $data = SavedEstimate::where("id", $this->edit_id)->first();
+        if ($data) {
+            $data = $data->toArray();
+            $this->Request = json_decode($data["data"], true);
+            $this->listID = $this->Request["product_list"];
+        } else {
+            // Handle the case where data is not found
+        }
     }
 
     public function index(Request $req)
@@ -87,7 +100,8 @@ class DiscountingController extends Controller
                 "mrc"        => ($vmarr["cpu"] * $this->getProductPrice($vmarr["prod_ints"]["vcore"])) * intval($Val["vmqty"]),
                 "otc"        => 0,
                 "discount"   => 0
-            ], "ram" => [
+            ],
+            "ram" => [
                 "service"    => $Val["vmname"],
                 "product"    => "RAM : {$vmarr["ram"]}",
                 "prod_unit" => "NO",
@@ -97,7 +111,8 @@ class DiscountingController extends Controller
                 "mrc"        => ($vmarr["ram"] * $this->getProductPrice($vmarr["prod_ints"]["ram"])) * intval($Val["vmqty"]),
                 "otc"        => 0,
                 "discount"   => 0
-            ], "storage" => [
+            ],
+            "storage" => [
                 "service"    => $Val["vmname"],
                 "product"    => "Disk - " . (preg_replace("/[a-zA-Z]| /", '', $this->getProdName($vmarr["prod_ints"]["storage"]))) . " IOPS : {$vmarr["disk"]} GB",
                 "prod_unit" => "NO",

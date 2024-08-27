@@ -80,8 +80,8 @@ class test_SavePricesController extends Controller
                 } else {
                     try {
                         RateCardPrice::create([
-                            "prod_id" => $product->id,
-                            "rate_card_id" => $rateCard->id,
+                            // "prod_id" => $product->id,
+                            // "rate_card_id" => $rateCard->id,
                             "input_price" => round(floatval($prod["recurring_cost"]), 2),
                             "region_id" => 0,
                             "price" => round(floatval($prod["recurring_selling_price"]), 2),

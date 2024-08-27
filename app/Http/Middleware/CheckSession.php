@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class CheckSession
 {
@@ -15,23 +15,32 @@ class CheckSession
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
+    private array $excludedRoutes = [
+        '/',
+        'login',
+        "Dashboard",
+        'register',
+        "test-email",
+        "save-prices",
+        'password'
+    ];
+
     public function handle(Request $request, Closure $next): Response
     {
-        $excludedRoutes = [
-            '/',
-            'login',
-            "Dashboard",
-            'register',
-            'password/reset',
-            'password/email',
-            'password/reset/*',
-            'password/confirm',
-        ];
-
-        if (!in_array($request->path(), $excludedRoutes) && !Auth::user()) {
+        if (!$this->check_excluded($request->path()) && (!Auth::user() || Auth::check())) {
             return redirect('/Dashboard');
         }
 
         return $next($request);
     }
+
+    private function check_excluded(string $req_path): bool
+    {
+        foreach ($this->excludedRoutes as $path) {
+            if ($path == "/") return true;
+            if (preg_match("/{$path}/", $req_path)) return true;
+        }
+        return false;
+    }
 }
+    

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\DiscountData;
 use App\Models\OsCalculation;
 use App\Models\SavedEstimate;
 use App\Models\TermsCondition;
@@ -41,6 +42,7 @@ class FinalQuotationController extends Controller
             "exculsions" => [],
         ];
 
+
         $this->ArrManipulate($this->Request, $Result, $Total, $Sku_Data);
         $this->UpdateResultDiscount($Result);
         $this->updateSKU_Data($Sku_Data, $Result);
@@ -48,6 +50,9 @@ class FinalQuotationController extends Controller
         $this->getOtherData($Other, $this->edit_id);
 
         $JSON =  $this->JSON_TEMPLATE($Sku_Data);
+
+        $disc_data = DiscountData::select("approved_status")->where("quot_id", $this->edit_id)->get()->toArray();
+
         return view("layouts.final-quotation", [
             "Array" => $Result,
             "Total" => $Total,
@@ -55,6 +60,7 @@ class FinalQuotationController extends Controller
             "edit_id" => $this->edit_id,
             "JSON" => json_encode($JSON, JSON_PRETTY_PRINT),
             "_request" => base64_encode(json_encode($this->Request)),
+            "_discount_status" => $disc_data[0]["approved_status"] ?? null,
         ]);
     }
 

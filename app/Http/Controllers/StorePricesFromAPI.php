@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ProductList;
 use App\Models\RateCard;
 use App\Models\RateCardPrice;
+use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -31,7 +32,7 @@ class StorePricesFromAPI extends Controller
         try {
             $response = Http::timeout(self::API_TIMEOUT)
                 ->withHeaders([
-                    'Authorization' => 'Basic Y3JtaWFwaWNsaWVudDo2QUc/eFIkczQ7UDkkPz8hSw=='
+                    'Authorization' => getenv("CRM_API_AUTH")
                 ])
                 ->post($url);
 
@@ -99,21 +100,37 @@ class StorePricesFromAPI extends Controller
 
     private function upsertProduct(array $prod, array &$result): void
     {
-        $product = ProductList::updateOrCreate(
-            ['crm_prod_id' => $prod['core_product_id']],
-            [
-                'sku_code' => $prod['skucode'],
-                'crm_group_id' => $prod['primary_category_id'],
-                'primary_category' => $prod['primary_category_name'],
-                'sec_category' => $prod['secondary_category_name'],
-                'default_int' => strtolower(preg_replace("/00/", "", $prod['skucode'])),
-                'default_name' => $prod['core_product_name'],
-                'prod_int' => strtolower(preg_replace("/00/", "", $prod['skucode'])),
-                'product' => $prod['core_product_name'],
-            ]
-        );
+        $created = null;
+        $product = ProductList::where(['crm_prod_id' => $prod['core_product_id'], 'prod_int' => strtolower(preg_replace("/00/", "", $prod['skucode']))])->first();
 
-        $result[$product->wasRecentlyCreated ? 'created' : 'updated']++;
+        if ($product) {
+            $product->update(
+                [
+                    'sku_code' => $prod['skucode'],
+                    'crm_group_id' => $prod['primary_category_id'],
+                ]
+            );
+            $created = false;
+        } else {
+            try {
+                ProductList::insert(
+                    [
+                        'sku_code' => $prod['skucode'],
+                        'crm_group_id' => $prod['primary_category_id'],
+                        'primary_category' => $prod['primary_category_name'],
+                        'sec_category' => $prod['secondary_category_name'],
+                        'default_int' => strtolower(preg_replace("/00/", "", $prod['skucode'])),
+                        'default_name' => $prod['core_product_name'],
+                        'prod_int' => strtolower(preg_replace("/00/", "", $prod['skucode'])),
+                        'product' => $prod['core_product_name'],
+                    ]
+                );
+            } catch (Exception) {
+            }
+            $created = true;
+        }
+
+        $result[$created ? 'created' : 'updated']++;
     }
 
     private function addPrices(): array
@@ -142,7 +159,7 @@ class StorePricesFromAPI extends Controller
             $this->upsertRateCardPrice($product, $rateCard, $prod, $result);
         } else {
             Log::warning("Missing product or rate card for CRM product ID: " . $prod['core_product_id']);
-            $this->addProducts(); // Ensure this doesn't require parameters or adjust accordingly
+            // $this->addProducts(); // Ensure this doesn't require parameters or adjust accordingly
         }
     }
 
@@ -152,6 +169,7 @@ class StorePricesFromAPI extends Controller
             ['prod_id' => $product->id, 'rate_card_id' => $rateCard->id],
             [
                 'input_price' => round(floatval($prod['recurring_cost']), 2),
+                "region_id" => 0,
                 'price' => round(floatval($prod['recurring_selling_price']), 2),
                 'discountable_percentage' => 30,
                 'otc' => round(floatval($prod['selling_price']), 2),

@@ -102,9 +102,9 @@ trait QuotationFunctionService
         global $MatricsArray;
         $Result[$KEY]["security"][$Val["virus_type"]] = [
             "service"    => "Service",
-            "product"    => array_sum($MatricsArray["AntiVirus"][$KEY][$Val["virus_type"]]),
+            "product"    => $this->getProdName($Val["virus_type"]),
             "prod_unit" => "NO",
-            "qty"        => 1,
+            "qty"        => array_sum($MatricsArray["AntiVirus"][$KEY][$Val["virus_type"]]),
             "unit_price" => $this->getProductPrice($Val["virus_type"]),
             "prod_int"   => $Val["virus_type"],
             "mrc"        => array_sum($MatricsArray["AntiVirus"][$KEY][$Val["virus_type"]]) * $this->getProductPrice($Val["virus_type"]),
@@ -159,9 +159,9 @@ trait QuotationFunctionService
             } elseif (!empty($options) && !is_null($options["Data"])) {
                 extract($options);
                 $result = array_sum([
-                    $arr['cpu'] * ($cpu_price - ($cpu_price * ($Data->value($KeyString . ".vcore") / 100))),
-                    $arr['ram'] * ($ram_price - ($ram_price * ($Data->value($KeyString . ".ram") / 100))),
-                    $arr['disk'] * ($disk_price - ($disk_price * ($Data->value($KeyString . ".storage") / 100))),
+                    $arr['cpu'] * ($cpu_price - ($cpu_price * (floatval($Data->value($KeyString . ".vcore")) / 100))),
+                    $arr['ram'] * ($ram_price - ($ram_price * (floatval($Data->value($KeyString . ".ram")) / 100))),
+                    $arr['disk'] * ($disk_price - ($disk_price * (floatval($Data->value($KeyString . ".storage")) / 100))),
                 ]);
             }
         } else {
@@ -273,7 +273,7 @@ trait QuotationFunctionService
     }
     private function getSoftwareLic(string $type, $KEY): array
     {
-        global $MatricsArray; // Import variables from the array into the current symbol table
+        global $MatricsArray;
         $result = [];
         $products = ProductList::where('sec_category', $type)->distinct()->pluck('prod_int')->toArray();
         $cpuKeys = array_keys($MatricsArray["CPU"][$KEY]);
@@ -332,8 +332,6 @@ trait QuotationFunctionService
             }
         }
     }
-
-
     private function processGeneralServices(&$Result, &$Sku_Data, $KEY, $Key, $name, $Val)
     {
         global $MatricsArray;
@@ -646,7 +644,6 @@ trait QuotationFunctionService
                                     foreach ($val as $_K => $_V) {
                                         if (is_array($_V)) {
                                             foreach ($_V as $_k => $_v) {
-
                                                 if ($_v["qty"] > 0) {
                                                     $QTY = $_v["qty"];
                                                     $IS_BILLABLE = true;
@@ -654,14 +651,11 @@ trait QuotationFunctionService
                                                     $QTY = 1;
                                                     $IS_BILLABLE = false;
                                                 }
-
                                                 $SKU = $_v["sku_code"];
                                                 $UNIT_PRICE = floatval($_v["unit_price"]);
                                                 $OTC = $_v["otc"] ?? 0;
                                                 $DISCOUNT = ($OTC == 0) ? ($_v["discount"] ?? 0) : 0;
                                                 $OTC_DISCOUNT = ($OTC != 0) ? ($_v["discount"] ?? 0) : 0;
-
-
                                                 $template['phase_name'][$pCount]["group_name"][$gCount]['products'][$iCount]['product_sku']      = $SKU;
                                                 $template['phase_name'][$pCount]["group_name"][$gCount]['products'][$iCount]['product_quantity'] = $QTY;
                                                 $template['phase_name'][$pCount]["group_name"][$gCount]['products'][$iCount]['product_price']    = $UNIT_PRICE;

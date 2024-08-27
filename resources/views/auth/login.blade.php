@@ -33,7 +33,7 @@
                 @enderror
             </div>
             <div class="form-inline">
-                <a href="?forgetPass" id="forgot" class="font-weight-bold">Forgot password ?</a>
+                <a href="/password/reset" id="forgot" class="font-weight-bold">Forgot password ?</a>
             </div>
             <button type="submit" class="btn btn-primary btn-block mt-3" name="login_btn" id="login_btn">
                 {{ __('Login') }}

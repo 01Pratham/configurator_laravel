@@ -12,6 +12,9 @@
         <div class="container-fluid except full" style="zoom:65%">
             <link rel="stylesheet" href="/assets/dist/css/FinalQuotation.css">
             <div class="except" id="tbl_div">
+                @php
+                    $DISC = null;
+                @endphp
                 @foreach ($Array as $KEY => $VAL)
                     @include('components.FinalTable.table-component', [
                         'KEY' => $KEY,
@@ -21,8 +24,14 @@
                     @php
                         $sheets[$KEY] = $VAL['estmtname'];
 
-                        if ($VAL['percentage'] > 0) {
+                        if ($_discount_status == 'NA' || $_discount_status == 'Approved') {
                             $DISC = true;
+                        } elseif (
+                            $_discount_status == 'Rejected' ||
+                            $_discount_status == 'Remaining' ||
+                            $_discount_status == 'Unchanged'
+                        ) {
+                            $DISC = false;
                         }
                     @endphp
                 @endforeach
@@ -31,20 +40,19 @@
                     'Total' => $Total,
                     'Other' => $Other,
                 ])
-                @php
-                    $DISC = null;
-                @endphp
+                {{-- {{ $DISC }} --}}
+
             </div>
             <div class="container except d-flex justify-content-center mt-3 py-3">
                 <button class="btn btn-outline-danger btn-lg mx-1 export" id="pdf">
                     <i class="fa fa-file-pdf pr-2"></i>
                     {{ __('Export PDF') }}
                 </button>
+                <button class="btn btn-outline-success btn-lg mx-1 export" id="export">
+                    <i class="fa fa-file-excel pr-2"></i>
+                    {{ __('Export') }}
+                </button>
                 @if (in_array(1, session()->get('user')['permissions']))
-                    <button class="btn btn-outline-success btn-lg mx-1 export" id="export">
-                        <i class="fa fa-file-excel pr-2"></i>
-                        {{ __('Export') }}
-                    </button>
                     <button class="btn btn-outline-success btn-lg mx-1 export" id="exportShareable">
                         <i class="fa fa-file-excel pr-2"></i>
                         Export as Shareable
@@ -129,6 +137,39 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
     <script>
+        function updateStatus(status, approved_by = '') {
+            const Data = {
+                id: {{ $edit_id }},
+                action: 'UpdateDiscountingStatus',
+                status: status,
+                approved_by: approved_by
+            }
+
+            if (status === "Rejected") {
+                if (!$("#reject_remark").val()) {
+                    $("#reject_remark").addClass("border-danger")
+                    $(".Error-Reject").html("Please Enter Remark")
+                    return;
+                }
+
+                $("#modal, #modal-backdrop").removeClass("show").hide()
+                Data.remarks = escapeHtml($("#reject_remark").val());
+            }
+            $.ajax({
+                headers: {
+                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                },
+                type: 'POST',
+                url: "/Save/Estimate/Update",
+                dataType: "TEXT",
+                data: Data,
+                success: function(response) {
+                    alert(response);
+                    window.location.reload()
+                }
+            })
+        }
+
         // console.log("{{ env('CRM_API') }}");
         function insertBrTags(string) {
             if (string.length > 160) {

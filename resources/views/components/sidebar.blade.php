@@ -50,7 +50,9 @@
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('CreateNew') }}"
-                        class="nav-link @if (Route::is('CreateNew') || preg_match('/\/Estimate/', route(Route::currentRouteName()))) active @endif except" id="create">
+                        class="nav-link @if (Route::is('CreateNew') ||
+                                Str::contains(Route::current()->uri(), 'Estimate/') ||
+                                Route::current()->uri() == 'Estimate') active @endif except" id="create">
                         <i class="nav-icon fas fa-cogs"></i>
                         <p class="except">
                             {{ __('Create New') }}

@@ -19,14 +19,32 @@ class SavedQuotationController extends Controller
             "version" => 'VERSION',
             "owner" => 'OWNER',
             "last_changed_by" => 'LAST UPDATED BY',
-            "date_created" => 'DATE CREATED',
-            "date_updated" => 'DATE UPDATED',
+            "created_at" => 'DATE CREATED',
+            "updated_at" => 'DATE UPDATED',
             "contract_period" => 'CONTRACT PERIOD',
             "total_upfront" => 'TOTAL UPFRONT COST',
             "id" => 'ACTION',
         ];
 
-        $table_body = SavedEstimate::select(array_keys($table_head))->where("emp_code", ($_id ?? session()->get('user')["crm_user_id"]))->get()->toArray();
+        $table_body = SavedEstimate::select([
+            "tbl_saved_estimates.id",
+            "tbl_saved_estimates.pot_id",
+            "tbl_saved_estimates.project_name",
+            "tbl_saved_estimates.version",
+            "owner.first_name as owner",
+            "last_changed_by.first_name as last_changed_by",
+            "tbl_saved_estimates.created_at",
+            "tbl_saved_estimates.updated_at",
+            "tbl_saved_estimates.contract_period",
+            "tbl_saved_estimates.total_upfront",
+        ])
+            ->join("tbl_login_master as owner", "owner.crm_user_id", "=", "tbl_saved_estimates.owner")
+            ->join("tbl_login_master as last_changed_by", "last_changed_by.crm_user_id", "=", "tbl_saved_estimates.last_changed_by")
+            ->where("tbl_saved_estimates.emp_code", ($_id ?? session()->get('user')["crm_user_id"]))
+            ->where("tbl_saved_estimates.is_deleted", 0)
+            ->get()
+            ->toArray();
+
 
         $content_header = ['Saved Estimates' => route('SavedEstimates')];
         if (!is_null($_id)) {
@@ -34,7 +52,6 @@ class SavedQuotationController extends Controller
                 ->where('crm_user_id', $_id)
                 ->get()
                 ->toArray();
-            // print_r($user);
             if (isset($user[0]['name'])) {
                 $content_header[$user[0]['name']] = route("SavedEstimates", $_id);
             }

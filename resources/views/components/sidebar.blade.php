@@ -13,7 +13,7 @@
                 <input type="checkbox" id="profileHead" class="head-btn d-none"
                     oninput="if($(this).prop('checked')){ $('#collapseExample').removeClass('hiddenDiv') ; $('#collapseExample').addClass('show')} else {$('#collapseExample').removeClass('show') ; $('#collapseExample').addClass('hiddenDiv')}">
                 <label class="text-left btn border-0" for="profileHead" id="profile" style="z-index: 1;">
-                    {{ session()->get('user')['first_name'] }} {{ session()->get('user')['last_name'] }}
+                    {{ session()->get('user')['name'] }}
                 </label>
                 <div class="hiddenDiv except" id="collapseExample">
                     <div class=" card-body except">
@@ -77,6 +77,16 @@
                         </p>
                     </a>
                 </li>
+                @if (session()->get('user')['crm_user_id'] == 1)
+                    <li class="nav-item">
+                        <a href="{{ route('AdminDashboard') }}" class="nav-link except" id="Admin">
+                            <i class="nav-icon fa fa-user-tie"></i>
+                            <p class="except">
+                                {{ __('Admin Panel') }}
+                            </p>
+                        </a>
+                    </li>
+                @endif
             </ul>
         </nav>
     </div>

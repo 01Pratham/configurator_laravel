@@ -2,19 +2,20 @@
 
 namespace App\Models;
 
+use App\Services\ModifyDatesInFormat;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AssociativeProduct extends Model
+class AssociativeProducts extends Model
 {
     use HasFactory;
-
     protected $table = "tbl_associative_products";
 
     public function productList()
     {
         return $this->belongsTo(ProductList::class, 'prod_id', 'id');
     }
+    use ModifyDatesInFormat;
 
     public static function getAssciatedProducts($prod_id)
     {

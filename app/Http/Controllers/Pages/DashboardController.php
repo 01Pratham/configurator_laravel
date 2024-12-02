@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Pages;
 
+use App\Http\Controllers\Controller;
 use App\Models\LoginMaster;
 use App\Models\RolePermission;
 use App\Models\SavedEstimate;

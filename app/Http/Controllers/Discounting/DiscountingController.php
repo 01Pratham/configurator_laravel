@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Discounting;
 
 use App\Http\Controllers\Controller;
 use App\Models\SavedEstimate;
@@ -55,7 +55,6 @@ class DiscountingController extends Controller
             "Products" => $Products,
             "edit_id" =>  $this->edit_id,
             "_request" => base64_encode(json_encode($this->Request)),
-
         ]);
     }
 

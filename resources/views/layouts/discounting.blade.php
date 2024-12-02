@@ -221,7 +221,7 @@
                 FirstFocused = true;
                 let $Mrc = $(this).parent().find(".MRC");
 
-                if (isNaN(newPerc) || newPerc > 99) {
+                if (isNaN(newPerc)) { //|| newPerc > 99
                     alert("Please Enter a valid Percentage");
                     $(this).html(percentage.toFixed(2) + " %");
                 } else {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\FinalQuotation;
 
 use App\Http\Controllers\Controller;
 use App\Models\DiscountData;
@@ -52,6 +52,8 @@ class FinalQuotationController extends Controller
         $JSON =  $this->JSON_TEMPLATE($Sku_Data);
 
         $disc_data = DiscountData::select("approved_status")->where("quot_id", $this->edit_id)->get()->toArray();
+
+        // return $Result;
 
         return view("layouts.final-quotation", [
             "Array" => $Result,

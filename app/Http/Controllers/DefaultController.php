@@ -14,4 +14,8 @@ class DefaultController extends Controller
         return redirect("/Dashboard");
     }
 
+    public function check_session(){
+        
+    }
+
 }

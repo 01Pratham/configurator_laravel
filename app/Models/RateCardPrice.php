@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use App\Services\ModifyDatesInFormat;
 
 class RateCardPrice extends Model
 {
@@ -13,6 +14,7 @@ class RateCardPrice extends Model
 
     protected $table = "tbl_rate_card_prices";
     private static $tbl = "tbl_rate_card_prices";
+    use ModifyDatesInFormat;
 
     protected $fillable = [
         "prod_id",

@@ -20,13 +20,15 @@ class StoreActivityLogs
             "crm_user_id" => null,
             "username" => null
         ];
-        VisitorActivityLog::create([
-            "session_id" => session()->getId(),
-            "user_ip_address" => $request->ip(),
-            "emp_code" => $user["crm_user_id"],
-            "uname" => $user["username"],
-            "page_url" => $request->url(),
-        ]);
+        if (!empty(session()->getId()) && !empty(session()->get('user'))) {
+            VisitorActivityLog::create([
+                "session_id" => session()->getId(),
+                "user_ip_address" => $request->ip(),
+                "emp_code" => $user["crm_user_id"],
+                "uname" => $user["username"],
+                "page_url" => $request->url(),
+            ]);
+        }
         return $next($request);
     }
 }

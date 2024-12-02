@@ -20,6 +20,12 @@ select {
     background: white;
     color: black;
 }
+
+.sidebar-list-c {
+    max-height: 20rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
 /*select,input,label,span,i{*/
 /*    background : transparent !important;*/
 /*    color : auto;*/
@@ -582,4 +588,54 @@ table th {
     #navbar {
         width: 100vw;
     }
+}
+
+.pagination {
+    width: 100%;
+    padding: 0 1rem;
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+.pagination:not(:has(.page-item:target)) .page-step[data-shown="1"] {
+    display: inline-flex;
+}
+.pagination:not(:has(.page-item:target)) #page-1 {
+    color: #fff;
+    background-color: #1b95ff;
+}
+.page-item {
+    color: #000;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-right: 0.25rem;
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+}
+.page-item:last-child {
+    margin-right: 0;
+}
+.page-item:is(a) {
+    text-decoration: none;
+    background-color: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: color 128ms ease-out, background-color 128ms ease-out;
+}
+.page-item:is(a):not(:target):hover,
+.page-item:is(a):not(:target):focus,
+.page-item:is(a):not(:target):active {
+    background-color: #dfdfdf;
+}
+.page-item:is(a):target {
+    color: #fff;
+    background-color: #1b95ff;
+}
+.page-num {
+    display: none;
+}
+.page-step {
+    display: none;
 }

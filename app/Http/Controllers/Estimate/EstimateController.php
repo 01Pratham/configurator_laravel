@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Estimate;
 
 use App\Http\Controllers\Controller;
 use App\Models\DiscountData;
@@ -15,9 +15,7 @@ use Illuminate\Support\Facades\Log;
 class EstimateController extends Controller
 {
     private $edit_id;
-    public function __construct(Request $request)
-    {
-    }
+    public function __construct(Request $request) {}
     public function index(Request $request)
     {
         $this->edit_id = session("edit_id");
@@ -36,10 +34,10 @@ class EstimateController extends Controller
         $regions = RegionMaster::all()->toArray();
 
         $Data = $this->getFormData($this->edit_id);
-
+        $edit_id = $this->edit_id;
         $post_array = $request->all();
         unset($post_array["_token"]);
-        return view("layouts.estimates", compact("Categories", "Products", "prod_list", "post_array", "regions", "Data"));
+        return view("layouts.estimates", compact("Categories", "Products", "prod_list", "post_array", "regions", "Data", 'edit_id'));
         // print_r($primaryCategories);
     }
 

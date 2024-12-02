@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Estimate;
 
 use App\Http\Controllers\Controller;
 use App\Models\DiscountData;

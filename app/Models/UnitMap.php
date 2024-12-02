@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Services\ModifyDatesInFormat;
 
 class UnitMap extends Model
 {
     use HasFactory;
 
     protected $table = "tbl_unit_map";
+    use ModifyDatesInFormat;
 
 
     public function units()

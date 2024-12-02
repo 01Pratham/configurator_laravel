@@ -1,25 +1,17 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Ajax;
 
 use App\Http\Controllers\Controller;
 use App\Models\LoginMaster;
 use App\Models\SavedEstimate;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
-class EstimateActionsController extends Controller
+class EstimateActionsControllerCopy extends Controller
 {
-    public function Delete(Request $request, $_id)
+
+    public function Delete(int $_id)
     {
-        $validator = Validator::make(['_id' => $_id], [
-            '_id' => 'required|integer',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->errorResponse("Invalid ID provided.");
-        }
-
         $id = SavedEstimate::where("id", $_id)->update(["is_deleted" => 1]);
         $status = $id ? "success" : "danger";
         $msg = $id ? "Estimate Deleted Successfully" : "Error! While deleting the estimate";
@@ -28,16 +20,8 @@ class EstimateActionsController extends Controller
         return view("layouts.action-alert", compact("status", "msg", "redirect"));
     }
 
-    public function Clone(Request $request, $_id)
+    public function Clone(int $_id)
     {
-        $validator = Validator::make(['_id' => $_id], [
-            '_id' => 'required|integer',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->errorResponse("Invalid ID provided.");
-        }
-
         $est_id = null;
         $est = SavedEstimate::where("id", $_id)
             ->where("is_deleted", false)
@@ -47,24 +31,16 @@ class EstimateActionsController extends Controller
             unset($est[0]["id"], $est[0]["created_at"], $est[0]["updated_at"]);
             $est_id = SavedEstimate::insertGetId([...$est[0]]);
         }
+        // dd($est);
 
         $status = $est_id ? "success" : "danger";
-        $msg = $est_id ? "Estimate Cloned Successfully" : "Error! While Cloning Estimate";
+        $msg = $est_id ? "Estimate Clonned Successfully" : "Error! While Clonning Estimate";
         $redirect = route("SavedEstimates");
 
         return view("layouts.action-alert", compact("status", "msg", "redirect"));
     }
-
-    public function Share(Request $request, $_id)
+    public function Share(int $_id)
     {
-        $validator = Validator::make(['_id' => $_id], [
-            '_id' => 'required|integer',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->errorResponse("Invalid ID provided.");
-        }
-
         $table_head = [
             "name" => 'NAME',
             "employee_code" => "EMPLOYEE CODE",
@@ -103,17 +79,8 @@ class EstimateActionsController extends Controller
         return view("layouts.master-table-layoutes", compact("table_head", "table_body", "exceptional_keys", "searchable", "content_header"));
     }
 
-    public function ShareToUser(Request $request, $user_id, $_id)
+    public function ShareToUser($user_id, $_id)
     {
-        $validator = Validator::make(['_id' => $_id, 'user_id' => $user_id], [
-            '_id' => 'required|integer',
-            'user_id' => 'required|integer',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->errorResponse("Invalid ID provided.");
-        }
-
         $est_id = null;
         $est = SavedEstimate::where("id", $_id)
             ->where("is_deleted", false)
@@ -126,15 +93,6 @@ class EstimateActionsController extends Controller
 
         $status = $est_id ? "success" : "danger";
         $msg = $est_id ? "Estimate Shared Successfully" : "Error! While Sharing Estimate";
-        $redirect = route("SavedEstimates");
-
-        return view("layouts.action-alert", compact("status", "msg", "redirect"));
-    }
-
-    private function errorResponse($message)
-    {
-        $status = "danger";
-        $msg = $message;
         $redirect = route("SavedEstimates");
 
         return view("layouts.action-alert", compact("status", "msg", "redirect"));

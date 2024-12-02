@@ -113,3 +113,18 @@ if (!function_exists("API")) {
         return json_decode($response, true);
     }
 }
+
+if (function_exists("replace_array")) {
+    function replace_array(array $array, string|int $oldKey, string $newKey, string $newValue): array
+    {
+        $newArray = [];
+        foreach ($array as $key => $value) {
+            if ($key === $oldKey) {
+                $newArray[$newKey] = $newValue;
+            } else {
+                $newArray[$key] = $value;
+            }
+        }
+        return $newArray;
+    }
+}

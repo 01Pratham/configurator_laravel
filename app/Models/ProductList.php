@@ -5,6 +5,7 @@ namespace App\Models;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Services\ModifyDatesInFormat;
 
 class ProductList extends Model
 {
@@ -12,6 +13,7 @@ class ProductList extends Model
 
     protected $table = "tbl_product_list";
 
+    use ModifyDatesInFormat;
     protected $fillable = [
         "sku_code",
         "crm_group_id",

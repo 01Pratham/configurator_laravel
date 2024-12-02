@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Pages;
 
 use App\Http\Controllers\Controller;
 use App\Models\RateCard;
@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 
 class RateCardController extends Controller
-{
+    {
     public function RateCards()
     {
         $table_head = [
@@ -85,7 +85,6 @@ class RateCardController extends Controller
             $table_body[$key] = arrange_keys($table_head, $card);
         }
 
-        // return $cards;
         $content_header = ['Rate Cards' => route("AllRateCards")];
         foreach ($table_body as $k => $arr) {
             $content_header[$arr["rate_card_name"]] = route("RateCard", $_id);

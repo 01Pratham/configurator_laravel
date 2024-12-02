@@ -1,29 +1,39 @@
 <?php
 
+use App\Http\Controllers\Ajax\EstimateActionsController;
+use App\Http\Controllers\Ajax\RenderHTMLController;
+use App\Http\Controllers\Ajax\SetSessionController;
+use App\Http\Controllers\Pages\DashboardController;
+use App\Http\Controllers\DefaultController;
+use App\Http\Controllers\GetDataFromModelController;
+use App\Http\Controllers\StorePricesFromAPI;
+use App\Http\Controllers\Discounting\AutoDiscountController;
+use App\Http\Controllers\Discounting\DiscountingController;
+use App\Http\Controllers\Estimate\CreateNewController;
+use App\Http\Controllers\Estimate\EstimateController;
+use App\Http\Controllers\FinalQuotation\FinalQuotationController;
+use App\Http\Controllers\FinalQuotation\generatePDFcontroller;
+use App\Http\Controllers\FinalQuotation\PushToCRMController;
+use App\Http\Controllers\Pages\RateCardController;
+use App\Http\Controllers\Pages\SavedQuotationController;
+use App\Http\Controllers\Pages\UsersController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\AutoDiscountController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\CreateNewController;
-use App\Http\Controllers\DefaultController;
-use App\Http\Controllers\DiscountingController;
-use App\Http\Controllers\EstimateActionsController;
-use App\Http\Controllers\EstimateController;
-use App\Http\Controllers\FinalQuotationController;
-use App\Http\Controllers\generatePDFcontroller;
-use App\Http\Controllers\GetDataFromModelController;
-use App\Http\Controllers\PushToCRMController;
-use App\Http\Controllers\RateCardController;
-use App\Http\Controllers\RenderHTMLController;
-use App\Http\Controllers\SavedQuotationController;
-use App\Http\Controllers\SavePricesController;
-use App\Http\Controllers\StorePricesFromAPI;
-use App\Http\Controllers\SetSessionController;
-use App\Http\Controllers\StoreInTableController;
-use App\Http\Controllers\UsersController;
 use App\Http\Middleware\StoreActivityLogs;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
+use App\Http\Controllers\admin\TablesActionController;
+use App\Http\Controllers\admin\TablesDataController;
+use Illuminate\Http\Request;
 
-// Route::get("/save-prices", [SavePricesController::class, "index"]);
+Route::prefix("Admin")->group(function () {
+    Route::get("/Dashboard", [AdminDashboard::class, "index"])->name("AdminDashboard");
+    Route::get("/Table/{table_name}", [TablesDataController::class, "index"])->name("TableData");
+    Route::post("/Table/{table_name}/Create", [TablesActionController::class, "Create"])->name("AdminTableActionCreate");
+    // Route::post("/Action/{table_name}/{id}/{action}", [TablesActionController::class, "call_func_by_action"])->name("AdminTableAction");
+    Route::get("/Action/{table_name}/{id}/Render", [TablesActionController::class, "Render"])->name("AdminTableRenderAction");
+    Route::post("/Action/{table_name}/{id}/Update", [TablesActionController::class, "Update"])->name("AdminTableUpdateAction");
+    Route::post("/Action/{table_name}/{id}/Delete", [TablesActionController::class, "Delete"])->name("AdminTableDeleteAction");
+});
 
 Route::middleware([StoreActivityLogs::class])->group(function () {
 
@@ -54,6 +64,9 @@ Route::middleware([StoreActivityLogs::class])->group(function () {
             Route::get("Share/{user_id}/{_id}", [EstimateActionsController::class, "ShareToUser"])->name("ShareEstimateToUser");
             Route::get('{any?}', [DefaultController::class, 'index']);
             Route::post('/', [EstimateController::class, "index"])->name("Estimate");
+            Route::post("/serialize-data", function (Request $request) {
+                return response()->json($request->all());
+            })->name("serialize-data");
             Route::post("FinalQuotation", [FinalQuotationController::class, "index"])->name("FinalQuotation");
             Route::post("Discounting", [DiscountingController::class, "index"])->name("Discounting");
             Route::post("AutoDiscount", [AutoDiscountController::class, "index"])->name("AutomaticDiscount");
@@ -75,8 +88,12 @@ Route::middleware([StoreActivityLogs::class])->group(function () {
 
         Route::prefix("Save")->group(function () {
             Route::prefix("Estimate")->group(function () {
-                Route::post('Update', [StoreInTableController::class, 'handleRequest'])->name('UpdateEstimate');
-                Route::post('Save', [StoreInTableController::class, 'handleRequest'])->name('SaveEstimate');
+                Route::post("Update", [EstimateActionsController::class, "UpdateEstimate"])->name("UpdateEstimate");
+                Route::post("Insert", [EstimateActionsController::class, "CreateEstimate"])->name("InsertEstimate");
+            });
+            Route::prefix("Discount")->group(function () {
+                Route::post("Update", [EstimateActionsController::class, "CreateDiscount"])->name("UpdateDiscount");
+                Route::post("Update/Status", [EstimateActionsController::class, "UpdateDiscountStatus"])->name("UpdateDiscountStatus");
             });
         });
     });

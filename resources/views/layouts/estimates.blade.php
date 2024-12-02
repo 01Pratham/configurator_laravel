@@ -44,8 +44,10 @@
             </div>
 
             <div class="light py-2 rounded d-flex justify-content-center my-4">
-                <button class="Next-Btn" name="proceed" formtarget="_blank">Proceed <i
-                        class="px-2 py-2  fa fa-angle-double-right"></i></button>
+                <button class="Next-Btn" name="proceed" formtarget="_blank">
+                    Proceed
+                    <i class="px-2 py-2  fa fa-angle-double-right"></i>
+                </button>
             </div>
 
             <div class="except fab-container d-flex align-items-end flex-column">
@@ -57,15 +59,15 @@
                         ->where('pot_id', request()->get('pot_id'))
                         ->where('emp_code', session('emp_code'))
                         ->first();
+                    echo session('edit_id');
                 @endphp
-
-                @if (!request()->has('edit_id') && empty($potQuery->id))
-                    <div class="except sub-button shadow btn btn-outline-success action" id="save">
+                @if (session('edit_id'))
+                    <div class="except sub-button shadow btn btn-outline-success action" id="Save">
                         <i class="except icons fa fa-save"></i>
                     </div>
                 @else
-                    <div class="except sub-button shadow btn btn-outline-info action" title="Update" id="update">
-                        <i class="except icons fa fa-files-o" title="Update"></i>
+                    <div class="except sub-button shadow btn btn-outline-info action" title="Update" id="Update">
+                        <i class="except icons fa fa-sync" title="Update"></i>
                     </div>
                 @endif
 
@@ -73,5 +75,47 @@
         </form>
     </div>
 
-    <script></script>
+    <script>
+        $(".action").click(function() {
+            let act = $(this).prop('id');
+            $.ajax({
+                headers: {
+                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                },
+                url: "{{ route('serialize-data') }}",
+                method: "post",
+                dataType: "TEXT",
+                data: $("#form1").serialize(),
+                success: function(res) {
+
+                    let result = JSON.parse(res);
+                    $.ajax({
+                        headers: {
+                            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                        },
+                        url: `/Save/Estimate/${act}`,
+                        dataType: "TEXT",
+                        method: "post",
+                        data: {
+                            action: act,
+                            emp_id: {{ session()->get('user')['crm_user_id'] }},
+                            data: Base64Encode(res),
+                            priceData: Base64Encode(JSON.stringify([])),
+                            total: 0,
+                            pot_id: result.pot_id,
+                            project_name: result.project_name,
+                            period: result[1].period,
+                            tc: Base64Encode(JSON.stringify([])),
+                        },
+                        success: function(response) {
+                            alert(response)
+                            if (act == "save") {
+                                window.location.href = "index.php?all";
+                            }
+                        }
+                    })
+                }
+            })
+        })
+    </script>
 @endsection

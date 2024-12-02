@@ -12,8 +12,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\LoginMaster::factory(10)->create();
-
         // \App\Models\LoginMaster::factory()->create([
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',

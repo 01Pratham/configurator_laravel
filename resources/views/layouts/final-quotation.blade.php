@@ -7,7 +7,6 @@
             'Final Quotation' => route('FinalQuotation'),
         ],
     ])
-    {{-- @PRE($Total, true) --}}
     <div class="content Main except ">
         <div class="container-fluid except full" style="zoom:65%">
             <link rel="stylesheet" href="/assets/dist/css/FinalQuotation.css">
@@ -40,8 +39,6 @@
                     'Total' => $Total,
                     'Other' => $Other,
                 ])
-                {{-- {{ $DISC }} --}}
-
             </div>
             <div class="container except d-flex justify-content-center mt-3 py-3">
                 <button class="btn btn-outline-danger btn-lg mx-1 export" id="pdf">
@@ -139,8 +136,7 @@
     <script>
         function updateStatus(status, approved_by = '') {
             const Data = {
-                id: {{ $edit_id }},
-                action: 'UpdateDiscountingStatus',
+                id: "{{ $edit_id }}",
                 status: status,
                 approved_by: approved_by
             }
@@ -160,7 +156,7 @@
                     "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
                 },
                 type: 'POST',
-                url: "/Save/Estimate/Update",
+                url: "{{ route('UpdateDiscountStatus') }}",
                 dataType: "TEXT",
                 data: Data,
                 success: function(response) {
@@ -331,7 +327,6 @@
                     data: "{{ base64_encode($JSON) }}"
                 },
                 success: function(response) {
-                    // alert(response);
                     console.log(response);
                 }
             });

@@ -639,3 +639,14 @@ table th {
 .page-step {
     display: none;
 }
+.dropdown-row {
+    transition: all 0.3s ease-in-out;
+}
+
+.child-hide {
+    display: none;
+}
+
+.child-display {
+    display: block;
+}

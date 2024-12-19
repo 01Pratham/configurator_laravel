@@ -13,19 +13,21 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tbl_saved_estimates', function (Blueprint $table) {
+        Schema::create('tbl_project_quotation_master', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('emp_code')->nullable(false);
-            $table->integer('pot_id')->nullable(false);
-            $table->string('project_name', 50)->charset('utf8mb4')->collation('utf8mb4_general_ci')->nullable(false);
-            $table->string('version', 5)->nullable(false);
+            $table->unsignedBigInteger('project_id');
+            $table->string("quotation_name", 50);
             $table->unsignedBigInteger('owner')->nullable(false);
             $table->unsignedBigInteger('last_changed_by')->nullable(false);
-            $table->integer('contract_period')->nullable(false);
-            $table->integer('total_upfront')->nullable(false);
-            $table->bigInteger('discounted_upfront')->nullable(false);
-            $table->text('data')->charset('utf8mb4')->collation('utf8mb4_general_ci')->nullable(false);
-            $table->text('prices')->nullable(false);
+            $table->double('total_selling_price')->nullable(false);
+            $table->double('total_discounted_selling_price')->nullable(false);
+            $table->double('total_otc_price')->nullable(false);
+            $table->double('total_discounted_otc_price')->nullable(false);
+            $table->double('total_discount_percentage')->nullable(false);
+            $table->unsignedBigInteger('price_list_id');
+            $table->enum("discount_approval_status", ["NA", "Pending", "Approved", "Rejected"]);
+            $table->unsignedBigInteger('discount_approved_by');
+            $table->text('discount_rejection_remark');
             $table->text('terms')->nullable(false);
             $table->text('assumptions')->nullable(false);
             $table->text('exculsions')->nullable(false);
@@ -37,6 +39,6 @@ return new class extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('tbl_saved_estimates');
+        Schema::dropIfExists('tbl_project_quotation_master');
     }
 };

@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\FinalQuotation;
 
 use App\Http\Controllers\Controller;
+use App\Models\DiscountData;
 use App\Models\OsCalculation;
-use App\Models\ProjectQuotationMaster;
+use App\Models\SavedEstimate;
 use App\Models\TermsCondition;
 use App\Services\QuotationFunctionService;
 use Illuminate\Http\Request;
-use PhpParser\Error;
 
 class FinalQuotationController extends Controller
 {
@@ -36,8 +36,6 @@ class FinalQuotationController extends Controller
         $Other = [
             "PROJECT" => $this->Request["project_name"],
             "POT" => $this->Request["pot_id"],
-            "QUOTATION_NAME" => $this->Request["quotation_name"],
-            "PRICE_LIST" => $this->Request["product_list"],
             "TENURE_TOTAL" => 0,
             "terms" => [],
             "assumptions" => [],
@@ -47,19 +45,15 @@ class FinalQuotationController extends Controller
 
         $this->ArrManipulate($this->Request, $Result, $Total, $Sku_Data);
         $this->UpdateResultDiscount($Result);
-        try {
-            $this->updateSKU_Data($Sku_Data, $Result);
-        } catch (\Exception $e) {
-            throw new Error("SKU Data cannot be generated");
-        }
+        $this->updateSKU_Data($Sku_Data, $Result);
         $this->getTotalArray($Result, $Total, $Other, $Sku_Data);
         $this->getOtherData($Other, $this->edit_id);
 
         $JSON =  $this->JSON_TEMPLATE($Sku_Data);
 
-        $disc_data = [];
+        $disc_data = DiscountData::select("approved_status")->where("quot_id", $this->edit_id)->get()->toArray();
 
-        // return response()->json(session()->all());
+        // return $Result;
 
         return view("layouts.final-quotation", [
             "Array" => $Result,
@@ -130,7 +124,7 @@ class FinalQuotationController extends Controller
             return;
         }
 
-        $Data = ProjectQuotationMaster::select("terms", "assumptions", "exculsions")->where("id", $edit_id)->get()->toArray();
+        $Data = SavedEstimate::select("terms", "assumptions", "exculsions")->where("id", $edit_id)->get()->toArray();
         if (isset($Data[0])) {
             foreach ($Data[0] as $key => $arr) {
                 $Array[$key] = json_decode($arr, true);
@@ -157,18 +151,7 @@ class FinalQuotationController extends Controller
                                         $Sku_Data[$KEY]["groups"][$key]["group_id"] = $this->getCrmGroupId("virtual_machine");
                                         $Sku_Data[$KEY]["groups"][$key]["group_quantity"] = 1;
                                         $Sku_Data[$KEY]["groups"][$key]["products"][$int] = [
-                                            "qty"        => preg_match(
-                                                "/[A-Za-z]/",
-                                                isset($values[$name]) ? $values[$name] : ""
-                                            ) ?
-                                                $this->getLics(
-                                                    $int,
-                                                    $values["vcore"],
-                                                    [
-                                                        "KEY" => $KEY,
-                                                        "i" => substr($key, 4)
-                                                    ]
-                                                ) : (isset($values[$name]) ? $values[$name] : ""),
+                                            "qty"        => preg_match("/[A-Za-z]/", $values[$name]) ? $this->getLics($int, $values["vcore"], ["KEY" => $KEY, "i" => substr($key, 4)]) : $values[$name],
                                             "sku_code"   => $this->getProductSku($int),
                                             "unit_price" => $this->getProductPrice($int),
                                             "discount"   => $Data->value($keyString),

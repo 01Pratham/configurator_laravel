@@ -91,10 +91,6 @@ Route::middleware([StoreActivityLogs::class])->group(function () {
                 Route::post("Update", [EstimateActionsController::class, "UpdateEstimate"])->name("UpdateEstimate");
                 Route::post("Insert", [EstimateActionsController::class, "CreateEstimate"])->name("InsertEstimate");
             });
-            Route::prefix("Discount")->group(function () {
-                Route::post("Update", [EstimateActionsController::class, "CreateDiscount"])->name("UpdateDiscount");
-                Route::post("Update/Status", [EstimateActionsController::class, "UpdateDiscountStatus"])->name("UpdateDiscountStatus");
-            });
         });
     });
 });

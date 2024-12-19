@@ -53,7 +53,6 @@
                                                     </div>
                                                 </td>
                                             @endif
-
                                         </tr>
                                         @php
                                             $count += 1;

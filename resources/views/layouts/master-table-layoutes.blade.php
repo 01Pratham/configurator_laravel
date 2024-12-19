@@ -8,10 +8,11 @@
         </div>
     </div>
 
-    @include('components.data-table', [
+    @include('components.data-table-test', [
         'Header' => $table_head,
         'Data' => $table_body,
         'searchable' => $searchable,
         'exceptional_keys' => $exceptional_keys ?? null,
+        'other' => $other ?? [],
     ])
 @endsection

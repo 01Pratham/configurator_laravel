@@ -104,7 +104,7 @@ class LoginMaster extends Authenticatable
             "permissions" => RolePermission::getUserPermissions($user->user_role),
             "name" => $user->name,
             "manager_code" => $user->manager_code,
-            "estimate_count" => SavedEstimate::where("emp_code", $user->crm_user_id)->count(),
+            "estimate_count" => ProjectQuotationMaster::where("owner", $user->crm_user_id)->count(),
             "applicable_discounting_percentage" => $user->applicable_discounting_percentage,
         ];
 

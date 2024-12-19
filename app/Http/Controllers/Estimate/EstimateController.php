@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Estimate;
 
 use App\Http\Controllers\Controller;
-use App\Models\DiscountData;
 use App\Models\LoginMaster;
 use App\Models\ProductList;
+use App\Models\ProjectMaster;
+use App\Models\ProjectQuotationMaster;
+use App\Models\QuotationPhaseMaster;
 use App\Models\RegionMaster;
-use App\Models\SavedEstimate;
 use App\Services\GetFormDataService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -19,9 +20,18 @@ class EstimateController extends Controller
     public function index(Request $request)
     {
         $this->edit_id = session("edit_id");
-        // exit;
+
+
+        $quotation_data = QuotationPhaseMaster::with([
+            'groups.items'
+        ])
+            ->where("tbl_quotation_phase_master.quotation_id", $this->edit_id)
+            ->get();
+
+        // return response()->json($quotation_data);
+
+        // // exit;
         $user = LoginMaster::getUser();
-        $discountArray = DiscountData::where("approved_status", "Remaining");
         $prod_list = $request->product_list;
         $Categories = ProductList::getProdData("primary_category", $prod_list);
         $Products = ProductList::getProdData([
@@ -33,18 +43,19 @@ class EstimateController extends Controller
 
         $regions = RegionMaster::all()->toArray();
 
-        $Data = $this->getFormData($this->edit_id);
         $edit_id = $this->edit_id;
         $post_array = $request->all();
+        $Data = $this->getFormData($this->edit_id);
         unset($post_array["_token"]);
-        return view("layouts.estimates", compact("Categories", "Products", "prod_list", "post_array", "regions", "Data", 'edit_id'));
+
+        return view("layouts.estimates", compact("Categories", "Products", "prod_list", "post_array", "Data", "regions",  'edit_id'));
         // print_r($primaryCategories);
     }
 
     private function getFormData($id)
     {
         try {
-            $jsonData = SavedEstimate::findOrFail($id)->data;
+            $jsonData = ProjectQuotationMaster::findOrFail($id)->data;
             return new GetFormDataService($jsonData);
         } catch (\Exception $e) {
             return new class

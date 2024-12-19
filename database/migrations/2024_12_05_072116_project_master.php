@@ -13,21 +13,18 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tbl_discount_data', function (Blueprint $table) {
+        Schema::create('tbl_project_master', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('quot_id');
-            $table->text('discounted_data');
-            $table->bigInteger('discounted_mrc');
-            $table->enum('approved_status', ['Approved', 'Rejected', 'Remaining', ""]);
-            $table->text('remarks')->nullable();
-            $table->unsignedBigInteger('approved_by')->nullable();
+            $table->string("project_name", 50);
+            $table->integer("project_pot_id");
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'))->nullable();
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))->nullable();
+            $table->boolean('is_active')->default(true);
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('tbl_discount_data');
+        Schema::dropIfExists('tbl_project_master');
     }
 };

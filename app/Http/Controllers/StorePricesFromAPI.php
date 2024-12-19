@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\ProductList;
 use App\Models\RateCard;
 use App\Models\RateCardPrice;
-use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Exception;
 
 class StorePricesFromAPI extends Controller
 {
@@ -125,7 +125,7 @@ class StorePricesFromAPI extends Controller
                         'product' => $prod['core_product_name'],
                     ]
                 );
-            } catch (Exception) {
+            } catch (\Exception) {
             }
             $created = true;
         }

@@ -1,6 +1,8 @@
 @extends('layouts.main-layout')
 
 @section('main')
+    @PRE($Array)
+
     @include('components.content-header', [
         'array' => [
             'Estimate' => route('Estimate'),
@@ -121,7 +123,7 @@
                         </button>
                     </form>
                 @else
-                    <button class="btn btn-outline-danger btn-lg mx-1 save" id="Save">
+                    <button class="btn btn-outline-danger btn-lg mx-1 save" id="Insert">
                         <i class="fas fa-save pr-2"></i>
                         Save
                     </button>
@@ -240,7 +242,7 @@
                                 return;
                             }
                         });
-                    }, 2000);
+                    }, 10000);
                 },
                 error: function(xhr, status, error) {
                     console.error('Error:', error);
@@ -281,22 +283,17 @@
                 type: "POST",
                 url: `/Save/Estimate/${act}`,
                 data: {
-                    action: act,
                     emp_id: {{ session()->get('user')['crm_user_id'] }},
-                    data: "{{ $_request }}",
-                    priceData: "{{ base64_encode(json_encode($Total['_prices'])) }}",
-                    total: {{ $Other['TENURE_TOTAL'] }},
-                    pot_id: {{ $Other['POT'] }},
-                    project_name: "{{ $Other['PROJECT'] }}",
+                    data: "{{ base64_encode(json_encode(['pot_id' => $Other['POT'], 'project_name' => $Other['PROJECT'], 'quotation_name' => $Other['QUOTATION_NAME'], 'price_list_id' => $Other['PRICE_LIST'], $Array])) }}",
                     period: {{ $Total[1]['TENURE'] }},
                     tc: Base64Encode(JSON.stringify(TC))
                 },
                 dataType: "TEXT",
                 success: function(response) {
                     const jsonObj = JSON.parse(response)
-                    if (ty == "btn") {
-                        console.log(jsonObj)
-                        alert(jsonObj.Message)
+                    if (ty == "btn" && jsonObj.status == 200) {
+                        // console.log(jsonObj)
+                        alert(jsonObj.message)
                         location.reload()
                     }
                 }

@@ -46,32 +46,11 @@
             <div class="light py-2 rounded d-flex justify-content-center my-4">
                 <button class="Next-Btn" name="proceed" formtarget="_blank">
                     Proceed
-                    <i class="px-2 py-2  fa fa-angle-double-right"></i>
+                    <i class="px-2 py-2 fa fa-angle-double-right"></i>
                 </button>
             </div>
 
-            <div class="except fab-container d-flex align-items-end flex-column">
-                <div class="except fab shadow fab-content">
-                    <i class="except icons fa fa-ellipsis-v text-white" title="Actions"></i>
-                </div>
-                @php
-                    $potQuery = DB::table('tbl_saved_estimates')
-                        ->where('pot_id', request()->get('pot_id'))
-                        ->where('emp_code', session('emp_code'))
-                        ->first();
-                    echo session('edit_id');
-                @endphp
-                @if (session('edit_id'))
-                    <div class="except sub-button shadow btn btn-outline-success action" id="Save">
-                        <i class="except icons fa fa-save"></i>
-                    </div>
-                @else
-                    <div class="except sub-button shadow btn btn-outline-info action" title="Update" id="Update">
-                        <i class="except icons fa fa-sync" title="Update"></i>
-                    </div>
-                @endif
-
-            </div>
+            @include('components.floating-option-btn')
         </form>
     </div>
 

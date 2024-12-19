@@ -179,7 +179,7 @@ trait QuotationFunctionService
     {
         if (is_array($VAL)) {
             return sprintf(
-                "vCores : %d | RAM %d GB | Disk - %d IOPS - %d GB | OS : %s | DB : %s",
+                "vCores : %d | RAM %d GB | Storage - %d IOPS - %d GB | OS : %s | DB : %s",
                 $VAL['cpu'],
                 $VAL['ram'],
                 preg_replace("/[a-zA-Z]| /", '', $this->getProdName($VAL['diskIops'])),
@@ -188,7 +188,7 @@ trait QuotationFunctionService
                 $this->getProdName($VAL["prod_ints"]['db'] ?? "")
             );
         } elseif (is_string($VAL)) {
-            $pattern = "/vCores : (\d+) \| RAM (\d+) GB \| Disk - (\d+) IOPS - (\d+) GB \| OS : ([^|]+) \| DB : (.+)/";
+            $pattern = "/vCores : (\d+) \| RAM (\d+) GB \| Storage - (\d+) IOPS - (\d+) GB \| OS : ([^|]+) \| DB : (.*)/";
             if (preg_match($pattern, $VAL, $matches)) {
                 return [
                     'vcore' => (int)$matches[1],

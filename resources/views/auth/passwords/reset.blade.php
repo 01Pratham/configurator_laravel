@@ -22,7 +22,7 @@
             </div>
             <div class="form-group py-1 pb-2">
                 <div class="input-field">
-                    <span class="fas fa-lock px-2" id="eye" onclick="ToogleClass($(this).prop('id') , 'pass')"></span>
+                    <span class="fas fa-lock px-2" id="eye1" onclick="ToogleClass($(this).prop('id') , 'pass')"></span>
                     <input type="password" placeholder="Password" id="pass" name='password'
                         class="@error('password') is-invalid @enderror" required autocomplete="new-password">
                     <!--    <span class="far fa-eye-slash " id="eye"></span>-->
@@ -35,10 +35,11 @@
             </div>
             <div class="form-group py-1 pb-2">
                 <div class="input-field">
-                    <span class="fas fa-lock px-2" id="eye" onclick="ToogleClass($(this).prop('id') , 'pass')"></span>
+                    <span class="fas fa-lock px-2" id="eye2"
+                        onclick="ToogleClass($(this).prop('id') , 'password-confirm')"></span>
                     <input type="password" placeholder="Password" required id="password-confirm"
                         name='password_confirmation' class="@error('password_confirmation') is-invalid @enderror" required
-                        autocomplete="new-password">
+                        autocomplete="new-password" oninput="validatePasswordMatch('pass', 'password-confirm', this)">
                 </div>
             </div>
             <button type="submit" class="btn btn-primary btn-block mt-3" name="login_btn" id="login_btn">
@@ -46,4 +47,23 @@
             </button>
         </form>
     </div>
+
+    <script>
+        function validatePasswordMatch(passwordId, confirmId, confirmElement) {
+            const password = $("#" + passwordId).val();
+            const $confirmField = $(confirmElement);
+
+            if (password !== $confirmField.val()) {
+                $confirmField.parent().addClass("border border-danger");
+            } else {
+                $confirmField.parent().removeClass("border border-danger");
+            }
+        }
+
+        // Attach click listeners
+        $(document).on("click", ".toggle-icon", function() {
+            const inputId = $(this).data("input");
+            togglePasswordVisibility(this.id, inputId);
+        });
+    </script>
 @endsection

@@ -113,7 +113,7 @@ class DiscountingController extends Controller
             ],
             "storage" => [
                 "service"    => $Val["vmname"],
-                "product"    => "Disk - " . (preg_replace("/[a-zA-Z]| /", '', $this->getProdName($vmarr["prod_ints"]["storage"]))) . " IOPS : {$vmarr["disk"]} GB",
+                "product"    => "Storage - " . (preg_replace("/[a-zA-Z]| /", '', $this->getProdName($vmarr["prod_ints"]["storage"]))) . " IOPS : {$vmarr["disk"]} GB",
                 "prod_unit" => "NO",
                 "qty"        => intval($Val["vmqty"]),
                 "prod_int"   => $vmarr["prod_ints"]["storage"],

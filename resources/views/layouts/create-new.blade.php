@@ -19,15 +19,22 @@
                         POT ID :
                     </label>
                     <input type="number" class="form-control" id="pot_id"
-                        value="{{ $Data->value('pot_id') == 0 ? '' : $Data->value('pot_id') }}" min="1000"
-                        max='99999' name="pot_id" placeholder="Enter POT ID Here"
-                        style="border: none; border-bottom: 1px solid ; border-radius:0;" required>
+                        value="{{ $Data?->pot_id == 0 ? '' : $Data?->pot_id }}" min="1000" max='99999' name="pot_id"
+                        placeholder="Enter POT ID " style="border: none; border-bottom: 1px solid ; border-radius:0;"
+                        required>
                 </div>
                 <div class="except px-2 col-md-6 ">
                     <label for="inputEmail4" class="form-label">Project Name : </label>
                     <input type="Text" class="form-control" id="project_name"
-                        value="{{ $Data->value('project_name') == 0 ? '' : $Data->value('project_name') }}" min="1000"
-                        max='9999' name="project_name" placeholder="Enter Project Name Here"
+                        value="{{ $Data?->project_name == 0 ? '' : $Data?->project_name }}" min="1000" max='9999'
+                        name="project_name" placeholder="Enter Project Name "
+                        style="border: none; border-bottom: 1px solid ; border-radius:0;" required>
+                </div>
+                <div class="except px-2 col-md-6  py-4">
+                    <label for="inputEmail4" class="form-label">Qoutation Name : </label>
+                    <input type="Text" class="form-control" id="quotation_name"
+                        value="{{ $Data?->quotation_name == 0 ? '' : $Data?->quotation_name }}" min="1000"
+                        max='9999' name="quotation_name" placeholder="Enter Quotation Name"
                         style="border: none; border-bottom: 1px solid ; border-radius:0;" required>
                 </div>
                 <div class="except px-2 col-md-6  py-4">
@@ -36,18 +43,7 @@
                         style="border: none; border-bottom: 1px solid ; border-radius:0;" required>
                         @foreach ($priceLists as $list)
                             <option value="{{ $list['id'] }}"
-                                @if ($Data->value('project_name') == $list['id']) {{ __('selected') }} @endif>{{ $list['rate_card_name'] }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="except px-2 col-md-6 py-4">
-                    <label for="type_est" class="form-label">Quotation Type</label>
-                    <select class="form-control" name="quot_type" id="type_est"
-                        style="border: none; border-bottom: 1px solid ; border-radius:0;" required>
-                        @foreach ($quoteType as $type)
-                            <option value="{{ $type['id'] }}"
-                                @if ($Data->value('quot_type') == $type['id']) {{ __('selected') }} @endif>{{ $type['template_name'] }}
+                                @if ($Data?->price_list == $list['id']) {{ __('selected') }} @endif>{{ $list['rate_card_name'] }}
                             </option>
                         @endforeach
                     </select>

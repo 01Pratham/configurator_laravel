@@ -13,18 +13,21 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tbl_associative_products', function (Blueprint $table) {
+        Schema::create('tbl_quotation_group_master', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('prod_id');
-            $table->unsignedBigInteger('associative_product_id');
+            $table->string("group_name", 20);
+            $table->unsignedBigInteger("crm_group_id");
+            $table->unsignedBigInteger("group_quantity");
+            $table->unsignedBigInteger("created_by");
+            $table->unsignedBigInteger("phase_id");
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'))->nullable();
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))->nullable();
-            $table->boolean('is_active');
+            $table->boolean("is_deleted");
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('tbl_associative_products');
+        Schema::dropIfExists('tbl_quotation_group_master');
     }
 };

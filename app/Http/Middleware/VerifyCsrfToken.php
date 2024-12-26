@@ -12,6 +12,7 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        'Save/Estimate',       // Excludes the POST request to InsertEstimate
+        'Save/Estimate/*',     // Excludes the POST request to UpdateEstimate with optional {id}
     ];
 }

@@ -12,6 +12,7 @@ class ProjectQuotationMaster extends Model
 
     protected $table = 'tbl_project_quotation_master';
     protected $fillable = [
+        "user_id",
         'project_id',
         "quotation_name",
         'owner',

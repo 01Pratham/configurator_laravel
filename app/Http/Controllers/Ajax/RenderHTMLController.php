@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Ajax;
 use App\Http\Controllers\Controller;
 use App\Models\RegionMaster;
 use App\Models\SavedEstimate;
-use App\Services\GetFormDataService;
+use App\Services\GetFromJson;
 use Illuminate\Http\Request;
 
 class RenderHTMLController extends Controller
@@ -16,7 +16,7 @@ class RenderHTMLController extends Controller
     public function __construct(Request $req)
     {
         $this->request = $req->all();
-        $this->Data = new GetFormDataService();
+        $this->Data = new GetFromJson();
     }
     public function ProductAjax()
     {

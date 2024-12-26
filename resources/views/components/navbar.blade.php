@@ -21,16 +21,26 @@
         @if (in_array(12, session()->get('user')['permissions']) ||
                 session()->get('user')['applicable_discounting_percentage'] < 0)
             @php
-                $discountArray = \App\Models\DiscountData::select([
-                    'tbl_discount_data.quot_id',
-                    'tbl_saved_estimates.project_name',
-                    'tbl_saved_estimates.pot_id',
+                $discountArray = \App\Models\ProjectQuotationMaster::select([
+                    'tbl_project_quotation_master.id',
+                    'tbl_project_master.project_name',
+                    'tbl_project_master.project_pot_id as pot_id',
                     'tbl_login_master.first_name',
                     'tbl_login_master.last_name',
                 ])
-                    ->join('tbl_saved_estimates', 'tbl_saved_estimates.id', '=', 'tbl_discount_data.quot_id')
-                    ->join('tbl_login_master', 'tbl_login_master.crm_user_id', '=', 'tbl_saved_estimates.emp_code')
-                    ->where('approved_status', 'Remaining')
+                    ->join(
+                        'tbl_project_master',
+                        'tbl_project_master.id',
+                        '=',
+                        'tbl_project_quotation_master.project_id',
+                    )
+                    ->join(
+                        'tbl_login_master',
+                        'tbl_login_master.crm_user_id',
+                        '=',
+                        'tbl_project_quotation_master.user_id',
+                    )
+                    ->where('discount_approval_status', 'Pending')
                     ->get()
                     ->toArray();
             @endphp

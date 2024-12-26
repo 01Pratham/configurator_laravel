@@ -7,82 +7,104 @@ use App\Models\ProductList;
 use App\Models\ProjectMaster;
 use Illuminate\Http\Request;
 use App\Services\QuotationFunctionService;
+use PhpParser\Error;
+use PhpParser\Node\Expr\Print_;
 
 class EstimateActionsController extends Controller
 {
     use QuotationFunctionService;
 
-    public array $tc_array = [];
+    private ?int $quotation_id = null;
 
-    public int $listID;
+    private array $tc_array = [];
 
-    public function CreateEstimate(Request $request)
+    private int $listID;
+
+    public function index(Request $request, int $id = null)
     {
-
-        $validatedData = $request->validate([
+        $validatedData = $request->validate(rules: [
             'emp_id' => 'required|integer',
             'data' => 'required|string',
             'tc' => 'required|string',
         ]);
 
-        try {
-            $user_id = $validatedData['emp_id'];
-            $data = json_decode(base64_decode($validatedData['data']), true);
-            $this->tc_array = json_decode(base64_decode($validatedData['tc']), true);
+        // try {
+        $user_id = $validatedData['emp_id'];
+        $data = json_decode(json: base64_decode(string: $validatedData['data']), associative: true);
+        $this->tc_array = json_decode(json: base64_decode($validatedData['tc']), associative: true);
+        $this->quotation_id = $id;
 
-            // Create Project
-            $project = $this->createProject($data);
+        // Create Project
+        $project = $this->createProject(data: $data);
 
-            // Calculate Prices
-            $total_mrc = $this->calculateRecursively($data, "mrc");
-            $total_otc = $this->calculateRecursively($data, "otc");
+        // Calculate Prices
+        $total_mrc = $this->calculateRecursively(data: $data, key: "mrc");
+        $total_otc = $this->calculateRecursively(data: $data, key: "otc");
 
-            // Process Data
-            $quotations = $this->processData($data, $project, $user_id, $total_mrc, $total_otc);
+        // Process Data
+        $quotations = $this->processData(data: $data, project: $project, user_id: $user_id, total_mrc: $total_mrc, total_otc: $total_otc);
 
-            // Set Session
-            session(["edit_id" => $quotations->id]);
+        // Set Session
+        session(key: ["edit_id" => $quotations->id]);
 
-            return response()->json([
-                "status" => 200,
-                "message" => "Data has been stored successfully",
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                "status" => 500,
-                "message" => "An error occurred: " . $e->getMessage(),
-            ]);
-        }
+        return response()->json(data: [
+            "status" => 200,
+            "message" => "Data has been stored successfully",
+        ]);
+        // } catch (\Exception $e) {
+        //     $data = json_decode(json: base64_decode(string: $validatedData['data']), associative: true);
+        //     return response()->json(data: [
+        //         "status" => 500,
+        //         "message" => "An error occurred: " . $e->getMessage(),
+        //         "data" => $data
+        //     ]);
+        // }
     }
 
 
     private function createProject(array $data)
     {
-        return ProjectMaster::create([
-            "project_pot_id" => $data["pot_id"],
-            "project_name" => $data["project_name"],
-        ]);
+        return ProjectMaster::firstOrCreate(
+            ["project_pot_id" => $data["pot_id"]],
+            [
+                "project_name" => $data["project_name"],
+                "project_pot_id" => $data["pot_id"],
+            ]
+        );
     }
-
     private function processData($data, $project, $user_id, $total_mrc, $total_otc)
     {
         foreach ($data as $key => $val) {
             if (is_array($val)) {
-                $quotations = $this->createQuotation($project, $data, $user_id, $total_mrc, $total_otc);
-
+                $quotations = $this->CreateOrUpdateQuotation($project, $data, $user_id, $total_mrc, $total_otc);
                 foreach ($val as $phaseData) {
-                    $phase = $this->createPhase($quotations, $phaseData, $user_id);
-
-                    foreach ($phaseData as $groupKey => $groupData) {
-                        if (is_array($groupData)) {
-                            if ($groupKey == "vm") {
-                                foreach ($groupData as $VmKey => $VmArr) {
-                                    $group = $this->createGroup($phase, $groupKey, $VmArr, $user_id);
+                    if (is_array($phaseData)) {
+                        try {
+                            $phase = $this->CreateOrUpdatePhase($quotations, $phaseData, $user_id);
+                        } catch (\Exception $e) {
+                            throw new Error(json_encode([$e->getMessage(), $phaseData, $e->getLine()]));
+                        }
+                        if (isset($phaseData["groups"])) {
+                            foreach ($phaseData["groups"] as $groupKey => $groupData) {
+                                if (is_array($groupData)) {
+                                    try {
+                                        $group = $this->CreateOrUpdateGroup($phase, $groupKey, $groupData, $user_id);
+                                    } catch (\Exception $e) {
+                                        throw new Error(json_encode([$e->getMessage(), $groupData, $e->getLine()]));
+                                    }
+                                    if (isset($groupData["products"])) {
+                                        foreach ($groupData["products"] as $itemKey => $itemData) {
+                                            if (is_array($itemData)) {
+                                                try {
+                                                    $this->CreateOrUpdateItem($group, $itemKey, $itemData, $user_id);
+                                                } catch (\Exception $e) {
+                                                    throw new Error(json_encode([$e->getMessage(), $itemData, $e->getLine()]));
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
-                            } else {
-                                $group = $this->createGroup($phase, $groupKey, $groupData, $user_id);
                             }
-                            $this->createItems($group, $groupData, $user_id);
                         }
                     }
                 }
@@ -91,61 +113,141 @@ class EstimateActionsController extends Controller
         return $quotations;
     }
 
-    private function createQuotation($project, $data, $user_id, $total_mrc, $total_otc)
+    private function CreateOrUpdateQuotation($project, $data, $user_id, $total_mrc, $total_otc)
     {
+        // echo $project->quotations()->where('id', $this->quotation_id)->first();
+        if (!isset($data["price_list_id"])) {
+            throw new \ErrorException(json_encode($data));
+        }
         $this->listID = $data["price_list_id"];
-        return $project->quotations()->create([
+
+        $quotation = $project->quotations()->where('id', $this->quotation_id)->first();
+        $quotationData = [
+            "user_id" => $user_id,
             "owner" => $user_id,
             "last_changed_by" => $user_id,
             "quotation_name" => $data["quotation_name"],
             "price_list_id" => $data["price_list_id"],
             "total_selling_price" => $total_mrc,
-            "total_discounted_selling_price" => null,
             "total_otc_price" => $total_otc ?? 0,
-            "total_discounted_otc_price" => null,
-            "total_discount_percentage" => null,
-            "discount_approval_status" => "NA",
             "terms" => json_encode($this->tc_array["terms"]),
-            "assumptions" =>  json_encode($this->tc_array["assumptions"]),
-            "exculsions" =>  json_encode($this->tc_array["exculsions"]),
-        ]);
-    }
+            "assumptions" => json_encode($this->tc_array["assumptions"]),
+            "exculsions" => json_encode($this->tc_array["exculsions"]),
+        ];
 
-    private function createPhase($quotation, $phaseData, $user_id)
-    {
-        return $quotation->phases()->create([
-            "phase_name" => $phaseData["estmtname"],
-            "phase_duration" => $phaseData["period"],
-            "region_id" => $phaseData["region"],
-            "created_by" => $user_id,
-        ]);
-    }
-
-    private function createGroup($phase, $key, $groupData, $user_id)
-    {
-        $primaryCategory = ($key == "vm") ? "virtual_machine" : $key;
-        $crm_group_id = ProductList::where("primary_category", $primaryCategory)
-            ->value("crm_group_id");
-
-        return $phase->groups()->create([
-            "group_name" => ($key == "vm") ? $groupData["service"] : ucfirst($key),
-            "crm_group_id" => $crm_group_id,
-            "group_quantity" => ($key == "vm") ? $groupData["qty"] : 1,
-            "created_by" => $user_id,
-        ]);
-    }
-
-    private function createItems($group, $groupData, $user_id)
-    {
-        foreach ($groupData as $itemData) {
-            if (isset($itemData["prod_int"])) {
-                if (is_array($itemData["prod_int"])) {
-                    $this->handleVmItems($group, $itemData, $user_id);
-                } else {
-                    $this->createItemEntry($group, $itemData, $user_id);
+        if ($quotation) {
+            $updated = false;
+            foreach ($quotationData as $key => $value) {
+                if ($quotation->{$key} !== $value) {
+                    $quotation->{$key} = $value;
+                    $updated = true;
                 }
             }
+            if ($updated) $quotation->save();
+
+            return $quotation;
         }
+        return $project->quotations()->create($quotationData);
+    }
+
+    private function CreateOrUpdatePhase($quotation, $phaseData, $user_id)
+    {
+        $Data = [
+            "phase_name" => $phaseData["phase_name"],
+            "phase_duration" => $phaseData["phase_tenure"],
+            "region_id" => $phaseData["region"],
+            "created_by" => $user_id,
+        ];
+        // print_r($phaseData);
+        $phase = $quotation->phases()->where('id', $phaseData["conf_phase_id"])->first();
+        if ($phase) {
+            $updated = false;
+            foreach ($Data as $key => $value) {
+                if ($phase->{$key} !== $value) {
+                    $phase->{$key} = $value;
+                    $updated = true;
+                }
+            }
+            if ($updated) $phase->save();
+
+            return $phase;
+        }
+        return $quotation->phases()->create($Data);
+    }
+
+    private function CreateOrUpdateGroup($phase, $key, $groupData, $user_id)
+    {
+        // print_r($groupData);
+        $group_id = null;
+        if (isset($groupData["conf_group_id"]) && $groupData["conf_group_id"] != null) {
+            $group_id = $groupData["conf_group_id"];
+        }
+        $group = $phase->groups()->where('id', $group_id)->first();
+        $Data = [
+            "group_name" => preg_match("/vm_.*/", $key) ? $groupData["group_name"] : ucfirst($key),
+            "crm_group_id" => $groupData["group_id"],
+            "group_quantity" => $groupData["group_quantity"],
+            "is_special" => preg_match("/vm|block_storage/", $key) ? preg_replace("/vm_.*/", "vm", $key) : "",
+            "created_by" => $user_id,
+        ];
+        if ($group) {
+            $updated = false;
+            foreach ($Data as $key => $value) {
+                if ($group->{$key} !== $value) {
+                    $group->{$key} = $value;
+                    $updated = true;
+                }
+            }
+            if ($updated) $group->save();
+
+            return $group;
+        }
+        return $phase->groups()->create($Data);
+    }
+
+    private function CreateOrUpdateItem($group, $itemKey, $itemData, $user_id)
+    {
+        // foreach ($groupData as $itemData) {
+        //     if (isset($itemData["prod_int"])) {
+        //         // if (is_array($itemData["prod_int"])) {
+        //         //     $this->handleVmItems($group, $itemData, $user_id);
+        //         // } else {
+        //         //     $this->createItemEntry($group, $itemData, $user_id);
+        //         // }
+        //         $this->createItemEntry($group, $itemData, $user_id);
+        //     }
+        // }
+
+        $exitsted_product = $group->items()
+            ->select("tbl_quotation_product_master.*")
+            ->join("tbl_product_list", "tbl_product_list.id", "=", "tbl_quotation_product_master.product_id")
+            ->where("tbl_product_list.prod_int", $itemData["prod_int"])
+            ->first();
+
+        $product = ProductList::where("prod_int", $itemData["prod_int"])->first();
+        $productData = [
+            "product_name" => $exitsted_product?->product_name ?? $product?->product,
+            "product_id" => $exitsted_product?->product_id ?? $product?->id,
+            "quantity" => $itemData["qty"] ?? 1,
+            "unit_price" => $itemData["unit_price"] ?? 0,
+            "mrc_price" => $itemData["mrc"] ?? 0,
+            "otc_price" => $itemData["otc"] ?? 0,
+            "discount_percentage" => $itemData["discount"] ?? null,
+            "added_by" => $user_id,
+            "is_billable" => 1,
+        ];
+
+        if ($exitsted_product) {
+            foreach ($productData as $key => $value) {
+                if ($product->{$key} !== $value) {
+                    $product->{$key} = $value;
+                }
+            }
+            $exitsted_product->save();
+            return $exitsted_product;
+        }
+
+        return $group->items()->create($productData);
     }
 
     private function handleVmItems($group, $itemData, $user_id)
@@ -170,19 +272,36 @@ class EstimateActionsController extends Controller
 
     private function createItemEntry($group, $itemData, $user_id)
     {
-        $product = ProductList::where("prod_int", $itemData["prod_int"])->first();
+        $exitsted_product = $group->items()
+            ->select("tbl_quotation_product_master.*")
+            ->join("tbl_product_list", "tbl_product_list.id", "=", "tbl_quotation_product_master.product_id")
+            ->where("tbl_product_list.prod_int", $itemData["prod_int"])
+            ->first();
 
-        $group->items()->create([
-            "product_name" => $product?->product,
-            "product_id" => $product?->id,
+        $product = ProductList::where("prod_int", $itemData["prod_int"])->first();
+        $productData = [
+            "product_name" => $exitsted_product?->product_name ?? $product?->product,
+            "product_id" => $exitsted_product?->product_id ?? $product?->id,
             "quantity" => $itemData["qty"] ?? 1,
             "unit_price" => $itemData["unit_price"] ?? 0,
             "mrc_price" => $itemData["mrc"] ?? 0,
             "otc_price" => $itemData["otc"] ?? 0,
-            "dicount_percentage" => $itemData["discount"] ?? null,
+            "discount_percentage" => $itemData["discount"] ?? null,
             "added_by" => $user_id,
             "is_billable" => 1,
-        ]);
+        ];
+
+        if ($exitsted_product) {
+            foreach ($productData as $key => $value) {
+                if ($product->{$key} !== $value) {
+                    $product->{$key} = $value;
+                }
+            }
+            $exitsted_product->save();
+            return $exitsted_product;
+        }
+
+        return $group->items()->create($productData);
     }
 
     private function calculateRecursively($data, $key)

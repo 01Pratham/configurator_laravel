@@ -1,4 +1,5 @@
 <div id="{{ $category }}_{{ $id }}">
+    <input type="hidden" name="{{ "{$name}[{$category}][group_id]" }}" value="{{ $group_id ?? '' }}">
     <div class="contain-btn btn-link border-bottom " id='{{ $category }}_head_{{ $id }}'>
         <a class="btn btn-link text-left" id="{{ $category }}_head_{{ $id }}" data-toggle="collapse"
             href="#{{ $category }}collapse_{{ $id }}" role="button" aria-expanded="true"
@@ -23,19 +24,19 @@
                     'category' => $category,
                     'Data' => $Data,
                     'request' => $request,
+                    'quantity' => 0,
                 ])
             @else
                 @foreach ($arr as $prod => $val)
-                    @if (preg_match('/qty/', $prod))
-                        @include('components.product-elem', [
-                            'id' => $id,
-                            'prod' => preg_replace('/_qty/', '', $prod),
-                            'name' => $name,
-                            'category' => $category,
-                            'Data' => $Data,
-                        ])
-                    @endif
+                    @include('components.product-elem', [
+                        'id' => $id,
+                        'prod' => $val['secondary_category'],
+                        'name' => $name,
+                        'category' => $category,
+                        'quantity' => $val['quantity'],
+                    ])
                 @endforeach
+
             @endif
         </div>
     </div>

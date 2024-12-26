@@ -35,7 +35,11 @@ trait QuotationFunctionService
         ];
 
         $this->updateVmMetrics($KEY, $Val);
-        $Result[$KEY][preg_replace("/_.*/", "", $Key)][$Key] = $this->getVmResult($Val, $vmarr);
+        $Result[$KEY][preg_replace("/_.*/", "", $Key)][$Key] = $this->getVmResult([
+            "Val" => $Val,
+            "vmarr" => $vmarr,
+            "group_id" => $this->Request[$KEY][$Key]["group_id"]
+        ]);
         $Total["_prices"][$KEY][preg_replace("/_.*/", "", $Key)][$Key]  = $this->getVmPrice($vmarr, false);
         if (Route::is("FinalQuotation") && !is_null($this->edit_id)) {
             try {
@@ -256,7 +260,7 @@ trait QuotationFunctionService
     {
         try {
             $product = ProductList::where('primary_category', $group)->first();
-            return $product ? $product->crm_group_id : "";
+            return $product?->crm_group_id ?? "";
         } catch (\Exception $e) {
             return "";
         }
@@ -328,6 +332,7 @@ trait QuotationFunctionService
             if (preg_match("/_mgmt/", $key) && preg_match("/os|db/", $key)) {
                 $this->getMngServicesQty($Result, $Sku_Data, $KEY, $Key, $name, $Val);
             } else {
+                if (isset($this->Request[$KEY][$Key]["group_id"])) $Sku_Data[$KEY]["groups"][$Key]["conf_group_id"] = $this->Request[$KEY][$Key]["group_id"];
                 $this->processGeneralServices($Result, $Sku_Data, $KEY, $Key, $name, $Val);
             }
         }
@@ -359,6 +364,7 @@ trait QuotationFunctionService
             }
             $Qty = floatval($Val["{$name}_qty"]);
             $UnitPrice = floatval($this->getProductPrice($Val["{$name}_select"]));
+            $Result[$KEY][$Key]["group_id"] = $this?->Request[$KEY][$Key]["group_id"];
             $Result[$KEY][$Key][$Val["{$name}_select"]] = [
                 "service"    => "Service",
                 "product"    => $this->getProdName($Val["{$name}_select"]),
@@ -371,12 +377,13 @@ trait QuotationFunctionService
                 "discount"   => 0,
             ];
             $Sku_Data[$KEY]["groups"][$Key]["products"][$name] = [
-                "qty"        => floatval($Val["{$name}_qty"]),
-                "sku_code"   => $this->getProductSku($Val["{$name}_select"]),
-                "unit_price" => $UnitPrice,
-                "discount"   => 0,
-                "otc"        => $this->getProductPrice($Val["{$name}_select"], "otc"),
-                "is_billable" => 1
+                "qty"         => floatval($Val["{$name}_qty"]),
+                "sku_code"    => $this->getProductSku($Val["{$name}_select"]),
+                "unit_price"  => $UnitPrice,
+                "discount"    => 0,
+                "otc"         => $this->getProductPrice($Val["{$name}_select"], "otc"),
+                "is_billable" => 1,
+                "prod_int"    => $Val["{$name}_select"]
             ];
 
             if (preg_match("/otc/", $Key)) {
@@ -401,6 +408,7 @@ trait QuotationFunctionService
                     "discount"    => 0,
                     "otc"         => 0,
                     "is_billable" => 1,
+                    "prod_int"    => $Val["{$name}_select"]
                 ];
             }
         }
@@ -460,7 +468,6 @@ trait QuotationFunctionService
         }
     }
 
-    // private function processOsManagement(array &$MGMT, $KEY, string $int, array $str, float $UnitPrice, string $product_name): void
     private function processOsManagement(&$Result, &$Sku_Data, $KEY, $Key, $prodType, $Val, $CompareableArray): void
     {
         global $MatricsArray;
@@ -501,11 +508,11 @@ trait QuotationFunctionService
             $Total[$KEY]["TENURE_TOTAL"] = 0;
             $Total[$KEY]["DISCOUNTED_TENURE_TOTAL"] = 0;
 
-
             if (is_array($VAL)) {
                 foreach ($VAL as $Key => $Val) {
                     if (is_array($Val)) {
                         foreach ($Val as $key => $val) {
+                            if (!is_array($val)) continue;
                             if (!preg_match("/vm_/", $key)) {
                                 $Total["_prices"][$KEY][$Key][$key] = $val["unit_price"];
                             }
@@ -541,7 +548,6 @@ trait QuotationFunctionService
             if ($Total[$KEY]["MONTHLY_TOTAL"] > 0) {
                 $Total[$KEY]["TENURE_TOTAL"] = $Total[$KEY]["MONTHLY_TOTAL"] * $VAL["period"];
                 $Total[$KEY]["DISCOUNTED_TENURE_TOTAL"] = $Total[$KEY]["DISCOUNTED_MONTHLY_TOTAL"] * $VAL["period"];
-
                 if (isset($Other["TENURE_TOTAL"])) {
                     $Other["TENURE_TOTAL"] +=  $Total[$KEY]["MONTHLY_TOTAL"] * $VAL["period"];
                 }
@@ -561,7 +567,6 @@ trait QuotationFunctionService
 
     public function UpdateResultDiscount(&$Result)
     {
-
         if (!is_null($this->edit_id)) {
             $Data = $this->DiscountDataObject();
             if (!is_null($Data)) {
@@ -575,6 +580,7 @@ trait QuotationFunctionService
                                         if (preg_match("/vm_/", $key)) continue;
                                         $Result[$KEY][$Key][$key]["discount"] = $Data->value("$KEY.Data.$Key.$key") ?? 0;
                                     } else {
+                                        if (!is_array($val)) continue;
                                         foreach ($val as $_K => $_V) {
                                             $Discount = $Data->value("$KEY.Data.$key.$_K");
                                             $Result[$KEY][$Key][$key][$_K]["discount"] = $Discount ?? 0;
@@ -593,7 +599,7 @@ trait QuotationFunctionService
     {
         try {
             $jsonData = DiscountData::where("quot_id", $this->edit_id)->get()->toArray();
-            return new GetFormDataService($jsonData[0]["discounted_data"]);
+            return new GetFromJson($jsonData[0]["discounted_data"]);
         } catch (\Exception $e) {
             return new class
             {

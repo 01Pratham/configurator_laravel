@@ -41,6 +41,7 @@ class SavedQuotationController extends Controller
             "colapssible" => true
         ];
 
+        // return response()->json($table_body);
         return view(view: "layouts.master-table-layoutes",
             data: compact("table_head", "table_body", "content_header", "searchable", "other")
         );

@@ -8,7 +8,7 @@ body {
     font-size: 20px;
 }
 .dark {
-    background: #343a40;
+    background: #343a40 !important;
     color: white;
     border-color: #fff;
 }
@@ -649,4 +649,22 @@ table th {
 
 .child-display {
     display: block;
+}
+
+*::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    background-color: #f5f5f5;
+}
+
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+    background-color: #f5f5f5;
+}
+
+*::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    background-color: #555;
 }

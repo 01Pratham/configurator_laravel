@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Discounting;
 
 use App\Http\Controllers\Controller;
+use App\Models\ProjectQuotationMaster;
+use App\Models\QuotationPhaseMaster;
 use App\Models\SavedEstimate;
 use App\Services\QuotationFunctionService;
 use Illuminate\Http\Request;
@@ -15,7 +17,7 @@ class DiscountingController extends Controller
     private $edit_id;
     const VM_PATTERN = "/vm_/";
     const STRG_PATTERN = "/strg_[1-9]/";
-    const ESTMT_PATTERN = "/estmtname|period|region/";
+    const ESTMT_PATTERN = "/phase_name|phase_duration|region_id/";
 
     // public function __construct(Request $req)
     // {
@@ -28,14 +30,11 @@ class DiscountingController extends Controller
     public function __construct(Request $req)
     {
         $this->edit_id = $req->edit_id;
-        $data = SavedEstimate::where("id", $this->edit_id)->first();
-        if ($data) {
-            $data = $data->toArray();
-            $this->Request = json_decode($data["data"], true);
-            $this->listID = $this->Request["product_list"];
-        } else {
-            // Handle the case where data is not found
-        }
+        $this->Request = QuotationPhaseMaster::with([
+            'groups.items'
+        ])
+            ->where("tbl_quotation_phase_master.quotation_id", $this->edit_id)
+            ->get()->toArray();
     }
 
     public function index(Request $req)
@@ -44,11 +43,13 @@ class DiscountingController extends Controller
         $Products = [];
         $Total = ["_prices" => []];
 
+        return response()->json($this->Request);
         $this->ArrManipulate($this->Request, $Result, $Total);
         $this->UpdateResultDiscount($Result);
 
         $this->getTotalArray($Result, $Total, $Other);
         $this->UpdateProductArray($Result, $Products);
+
         return view("layouts.discounting", [
             "Array" =>  $Result,
             "Total" => $Total,
@@ -75,11 +76,11 @@ class DiscountingController extends Controller
                 }
 
                 if (preg_match(self::VM_PATTERN, $Key)) {
-                    $this->processVmData($Result, $Total, $KEY, $Key, $Val);
+                    $this->processVmData($Result, $Total, $KEY, $Key, $Val["products"]);
                 } elseif (preg_match(self::STRG_PATTERN, $Key)) {
-                    $this->processStorageData($Result, $KEY, $Key, $Val);
+                    $this->processStorageData($Result, $KEY, $Key, $Val["products"]);
                 } else {
-                    $this->processOtherData($Result, $Sku_Data, $KEY, $Key, $Val);
+                    $this->processOtherData($Result, $Sku_Data, $KEY, $Key, $Val["products"]);
                 }
             }
         }

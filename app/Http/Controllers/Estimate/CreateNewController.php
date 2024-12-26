@@ -9,7 +9,7 @@ use App\Models\ProjectQuotationMaster;
 use App\Models\QuotType;
 use App\Models\RateCard;
 use App\Models\SavedEstimate;
-use App\Services\GetFormDataService;
+use App\Services\GetFromJson;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 
@@ -36,8 +36,8 @@ class CreateNewController extends Controller
             "tbl_project_quotation_master.quotation_name",
             "tbl_project_quotation_master.price_list_id as price_list"
         ])
-            ->join("tbl_project_master", "tbl_project_master.id", "=", "tbl_project_quotation_master.project_id") // Correct join
-            ->where("tbl_project_quotation_master.id", $id) // Filter by quotation ID
-            ->first(); // Use first() for a single record instead of get()
+            ->join("tbl_project_master", "tbl_project_master.id", "=", "tbl_project_quotation_master.project_id")
+            ->where("tbl_project_quotation_master.id", $id)
+            ->first();
     }
 }

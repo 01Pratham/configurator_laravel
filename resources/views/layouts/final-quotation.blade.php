@@ -1,7 +1,7 @@
 @extends('layouts.main-layout')
 
 @section('main')
-    @PRE($Array)
+    {{-- @PRE($Array)    --}}
 
     @include('components.content-header', [
         'array' => [
@@ -158,7 +158,7 @@
                     "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
                 },
                 type: 'POST',
-                url: "{{ route('UpdateDiscountStatus') }}",
+                url: "",
                 dataType: "TEXT",
                 data: Data,
                 success: function(response) {
@@ -211,43 +211,48 @@
                     $('<div style="page-break-before: always;"></div>').insertBefore($(this))
                 }
             });
+            content.find("select").each(function() {
+                $(this).parent().html($(this).val());
+            });
             content.find(".extraLine").remove();
             let htmlContent = content.prop('outerHTML');
-            $.ajax({
-                headers: {
-                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
-                },
-                url: '/Ajax/GeneratePDF',
-                method: 'POST',
-                data: {
-                    htmlContent: htmlContent.replace(/₹/g,
-                        "<span style='font-family: DejaVu Sans; sans-serif; background: transparent;'>&#8377;</span>"
-                    )
-                },
-                success: function(response) {
-                    $("#loader").addClass("d-none");
-                    window.open(response, '_blank')
-                    setTimeout(function() {
-                        $.ajax({
-                            headers: {
-                                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
-                                    "content"),
-                            },
-                            url: '/Ajax/DeletePDF',
-                            method: 'POST',
-                            data: {
-                                deleteFileUrl: response
-                            },
-                            success: function(res) {
-                                return;
-                            }
-                        });
-                    }, 10000);
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                }
-            });
+
+            console.log(htmlContent);
+            // $.ajax({
+            //     headers: {
+            //         "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+            //     },
+            //     url: '/Ajax/GeneratePDF',
+            //     method: 'POST',
+            //     data: {
+            //         htmlContent: htmlContent.replace(/₹/g,
+            //             "<span style='font-family: DejaVu Sans; sans-serif; background: transparent;'>&#8377;</span>"
+            //         )
+            //     },
+            //     success: function(response) {
+            //         $("#loader").addClass("d-none");
+            //         window.open(response, '_blank')
+            //         setTimeout(function() {
+            //             $.ajax({
+            //                 headers: {
+            //                     "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
+            //                         "content"),
+            //                 },
+            //                 url: '/Ajax/DeletePDF',
+            //                 method: 'POST',
+            //                 data: {
+            //                     deleteFileUrl: response
+            //                 },
+            //                 success: function(res) {
+            //                     return;
+            //                 }
+            //             });
+            //         }, 10000);
+            //     },
+            //     error: function(xhr, status, error) {
+            //         console.error('Error:', error);
+            //     }
+            // });
         });
         @if (in_array(12, session()->get('user')['permissions']))
             @php
@@ -284,7 +289,7 @@
                 url: `/Save/Estimate/${act}`,
                 data: {
                     emp_id: {{ session()->get('user')['crm_user_id'] }},
-                    data: "{{ base64_encode(json_encode(['pot_id' => $Other['POT'], 'project_name' => $Other['PROJECT'], 'quotation_name' => $Other['QUOTATION_NAME'], 'price_list_id' => $Other['PRICE_LIST'], $Array])) }}",
+                    data: "{{ base64_encode(json_encode($Other['sku_data'])) }}",
                     period: {{ $Total[1]['TENURE'] }},
                     tc: Base64Encode(JSON.stringify(TC))
                 },
@@ -328,6 +333,28 @@
                 }
             });
         }
+
+
+        $(".Unit select").on("change", function() {
+            let val = $(this).val(); // Get the selected value
+            let parentId = "#" + $(this).closest("tr").prop("id"); // Get the closest parent with an ID
+
+            // Update ".MRC, .Otc, .DiscountedMrc" elements
+            $(parentId)
+                .find(".MRC, .Otc, .DiscountedMrc")
+                .each(function() {
+                    let value = val === "not_billable" ? 0 : $(this).data(Object.keys($(this).data())[0] || 0);
+                    $(this).html(INR(value));
+                });
+
+            // Update ".percent" elements
+            $(parentId)
+                .find(".percent")
+                .each(function() {
+                    let percent = parseFloat($(this).data("percent"));
+                    $(this).html(`${percent} %`); // Single template for all cases
+                });
+        });
     </script>
 
 @endsection

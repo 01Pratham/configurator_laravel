@@ -19,7 +19,7 @@ class FinalQuotationController extends Controller
     private $edit_id;
     const VM_PATTERN = "/vm_/";
     const STRG_PATTERN = "/strg_[1-9]/";
-    const ESTMT_PATTERN = "/estmtname|period|region/";
+    const ESTMT_PATTERN = "/estmtname|period|region|phase_id/";
 
     public function __construct(Request $req)
     {
@@ -46,12 +46,14 @@ class FinalQuotationController extends Controller
 
 
         $this->ArrManipulate($this->Request, $Result, $Total, $Sku_Data);
+        // return response()->json($Result);
+
         $this->UpdateResultDiscount($Result);
-        try {
-            $this->updateSKU_Data($Sku_Data, $Result);
-        } catch (\Exception $e) {
-            throw new Error("SKU Data cannot be generated");
-        }
+        // try {
+        $this->updateSKU_Data($Sku_Data, $Result);
+        // } catch (\Exception $e) {
+        //     throw new Error("SKU Data cannot be generated : {$e->getMessage()}");
+        // }
         $this->getTotalArray($Result, $Total, $Other, $Sku_Data);
         $this->getOtherData($Other, $this->edit_id);
 
@@ -59,7 +61,10 @@ class FinalQuotationController extends Controller
 
         $disc_data = [];
 
-        // return response()->json(session()->all());
+        $Other["sku_data"] = ['pot_id' => $Other['POT'], 'project_name' => $Other['PROJECT'], 'quotation_name' => $Other['QUOTATION_NAME'], 'price_list_id' => $Other['PRICE_LIST'], "phases" => $Sku_Data];
+        // return response()->json($Other["sku_data"]);
+        // return response()->json(base64_encode(json_encode($Other["sku_data"])));
+
 
         return view("layouts.final-quotation", [
             "Array" => $Result,
@@ -78,9 +83,12 @@ class FinalQuotationController extends Controller
             if (!is_array($VAL)) continue;
             $Sku_Data[$KEY] = [
                 "quotation_name"        => $Array["project_name"],
+                "price_list_id"         => $this->Request["product_list"],
                 "phase_name"            => $VAL["estmtname"],
                 "phase_tenure"          => $VAL["period"],
+                "region"                => $VAL["region"],
                 "phase_total_recurring" => 0,
+                "conf_phase_id"         => $VAL["phase_id"],
                 "groups"                => []
             ];
 
@@ -94,26 +102,28 @@ class FinalQuotationController extends Controller
                     $Result[$KEY][$Key] = [];
                 }
                 if (preg_match(self::VM_PATTERN, $Key)) {
-                    $this->processVmData($Result, $Total, $KEY, $Key, $Val);
+                    $this->processVmData($Result, $Total, $KEY, $Key, $Val["products"]);
                 } elseif (preg_match(self::STRG_PATTERN, $Key)) {
-                    $this->processStorageData($Result, $KEY, $Key, $Val);
+                    $this->processStorageData($Result, $KEY, $Key, $Val["products"]);
                 } else {
-                    $this->processOtherData($Result, $Sku_Data, $KEY, $Key, $Val);
+                    $this->processOtherData($Result, $Sku_Data, $KEY, $Key, $Val["products"]);
                 }
             }
         }
     }
 
-    private function getVmResult($Val, $vmarr): array
+    private function getVmResult(array $Data): array
     {
+
         return [
-            "service"    => $Val["vmname"],
-            "product"    => $this->getVm($vmarr),
+            "group_id"   => $Data["group_id"],
+            "service"    => $Data["Val"]["vmname"],
+            "product"    => $this->getVm($Data["vmarr"]),
             "prod_unit"  => "NO",
-            "qty"        => intval($Val["vmqty"]),
-            "unit_price" => $this->getVmPrice($vmarr),
-            "prod_int"   => $vmarr["prod_ints"],
-            "mrc"        => $this->getVmPrice($vmarr) * intval($Val["vmqty"]),
+            "qty"        => (int) $Data["Val"]["vmqty"],
+            "unit_price" => $this->getVmPrice($Data["vmarr"]),
+            "prod_int"   => $Data["vmarr"]["prod_ints"],
+            "mrc"        => $this->getVmPrice($Data["vmarr"]) * intval($Data["Val"]["vmqty"]),
             "otc"        => 0,
             "discount"   => 0
         ];
@@ -153,9 +163,10 @@ class FinalQuotationController extends Controller
                                     foreach ($val["prod_int"] as $name => $int) {
                                         $keyString = preg_match("/os|db/", $name) ? "$KEY.Data.software.$int" : "$KEY.Data.$key.$name";
                                         $values = $this->getVm($val["product"]);
-                                        $Sku_Data[$KEY]["groups"][$key]["group_name"] = $key;
+                                        $Sku_Data[$KEY]["groups"][$key]["group_name"] = $val["service"];
                                         $Sku_Data[$KEY]["groups"][$key]["group_id"] = $this->getCrmGroupId("virtual_machine");
-                                        $Sku_Data[$KEY]["groups"][$key]["group_quantity"] = 1;
+                                        $Sku_Data[$KEY]["groups"][$key]["group_quantity"] = $val["qty"];
+                                        $Sku_Data[$KEY]["groups"][$key]["conf_group_id"] = $val["group_id"];
                                         $Sku_Data[$KEY]["groups"][$key]["products"][$int] = [
                                             "qty"        => preg_match(
                                                 "/[A-Za-z]/",
@@ -172,6 +183,8 @@ class FinalQuotationController extends Controller
                                             "sku_code"   => $this->getProductSku($int),
                                             "unit_price" => $this->getProductPrice($int),
                                             "discount"   => $Data->value($keyString),
+                                            "is_billable" => 1,
+                                            "prod_int"    => $int
                                         ];
                                         $DoneProds[] = $int;
                                     }
@@ -180,11 +193,15 @@ class FinalQuotationController extends Controller
                                         $Sku_Data[$KEY]["groups"][$Key]["group_name"] = $Key;
                                         $Sku_Data[$KEY]["groups"][$Key]["group_id"] = $this->getCrmGroupId($Key);
                                         $Sku_Data[$KEY]["groups"][$Key]["group_quantity"] = 1;
+                                        if (isset($val["group_id"])) $Sku_Data[$KEY]["groups"][$Key]["conf_group_id"] = $val["group_id"];
                                         $Sku_Data[$KEY]["groups"][$Key]["products"][$val["prod_int"]] = [
                                             "qty"        => $val["qty"],
                                             "sku_code"   => $this->getProductSku($val["prod_int"]),
                                             "unit_price" => $val["unit_price"],
-                                            "discount"   => $val["discount"]
+                                            "discount"   => $val["discount"],
+                                            "is_billable" => 1,
+                                            "prod_int"    => $val["prod_int"]
+
                                         ];
                                     }
                                 }

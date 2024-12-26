@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Services\GetFormDataService;
+use App\Services\GetFromJson;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;

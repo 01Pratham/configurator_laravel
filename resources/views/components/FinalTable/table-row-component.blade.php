@@ -27,7 +27,13 @@
     </td>
 
     <td class="Unit unshareable" data-unit={{ $arr['unit_price'] }}>
-        @INR($arr['unit_price'])
+        <select style="border: none; background: transparent; width: 100%; padding: 0px;"
+            id="{{ $keys['_k'] . '_' . (isset($keys['__k']) ? $keys['__k'] . '_' : '') . $keys['KEY'] }}_billable">
+            <option value="">
+                @INR($arr['unit_price'])
+            </option>
+            <option value="not_billable">Non Billable</option>
+        </select>
     </td>
 
     <td class="MRC text-nowrap unshareable mrc_{{ "{$KEY} {$Class}" }} {{ floatval($arr['otc']) > 0 ? 'hasOTC' : '' }}"
@@ -35,7 +41,7 @@
         @INR($MRC)
     </td>
 
-    <td class="text-nowrap Otc">
+    <td class="text-nowrap Otc" data-otc="{{ $arr['otc'] }}">
         @INR($arr['otc'])
     </td>
 
@@ -44,7 +50,7 @@
         {{ number_format(floatval($arr['discount']), 2, '.', '') . ' %' }}
     </td>
 
-    <td class="DiscountedMrc text-nowrap {{ $Class }}">
+    <td class="DiscountedMrc text-nowrap {{ $Class }}" data-discounted-mrc="{{ $DiscountedAmmt }}">
         @INR($DiscountedAmmt)
     </td>
 

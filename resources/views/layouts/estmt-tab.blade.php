@@ -1,5 +1,6 @@
 <section class="est_div align-center Main mt-2" id="est_div_{{ $array['id'] }}">
     <div class="contain-btn est-head-div btn-link shadow-sm light " id="contain-btn_{{ $array['id'] }}">
+        <input type="hidden" name="{{ $array['name'] }}[phase_id]" value="{{ $Data->value($array['name'] - 1 . '.id') }}">
         @if ($array['type'] == 'ajax')
             <input
                 onclick="$('#count_of_est').val(parseInt($('#count_of_est').val()) - 1);$(this).parent().parent().remove(); "
@@ -16,8 +17,8 @@
         <label class="text-left text-primary pt-3" for="checkHead_{{ $array['id'] }}"
             id="estmtHead_{{ $array['id'] }}" style="z-index: 1;">
             <h6 class="OnInput">
-                @if ($Data->value("{$array['name']}.estmtname") != '' && $Data->value("{$array['name']}.estmtname") != 0)
-                    {{ $Data->value("{$array['name']}.estmtname") }}
+                @if ($Data->value($array['name'] - 1 . '.phase_name') != '' && $Data->value($array['name'] - 1 . '.phase_name') != 0)
+                    {{ $Data->value($array['name'] - 1 . '.phase_name') }}
                 @else
                     Your Estimate
                 @endif
@@ -27,7 +28,8 @@
             <select name="{{ $array['name'] }}[region]" id="region_{{ $array['id'] }}" class="border-0 text-primary">
                 @foreach ($regions as $region)
                     @if ($region['id'] != 0)
-                        <option value = '{{ $region['id'] }}'>{{ $region['region_name'] }} </option>
+                        <option value = '{{ $region['id'] }}' @if ($Data->value($array['name'] - 1 . '.region_id') == $region['id']) selected @endif>
+                            {{ $region['region_name'] }} </option>
                     @endif
                 @endforeach
             </select>
@@ -44,7 +46,7 @@
                     <input type="text" class="form-control EstmtName" id="estmtname_{{ $array['id'] }}"
                         data-id="{{ $array['id'] }}" data-name="{{ $array['name'] }}" placeholder="Your Estimate"
                         name="{{ $array['name'] }}[estmtname]" required
-                        value="{{ $Data->value("{$array['name']}.estmtname") != 0 ? $Data->value("{$array['name']}.estmtname") : '' }}"
+                        value="{{ $Data->value($array['name'] - 1 . '.phase_name') != 0 ? $Data->value($array['name'] - 1 . '.phase_name') : '' }}"
                         onload="addLineItemsToDropdownMenu({{ $prod_list }})"
                         onchange="addLineItemsToDropdownMenu({{ $prod_list }})"
                         oninput="const lbl =  $(this).parent().parent().parent().parent().siblings('.est-head-div').find('.OnInput');
@@ -54,34 +56,36 @@
                     <input type="number" min=0 class="form-control small col-8 text-sm-left"
                         id="period_{{ $array['id'] }}" placeholder="Contract Period" min=1
                         name="{{ $array['name'] }}[period]" required
-                        value="{{ $Data->value("{$array['name']}.period") != 0 ? $Data->value("{$array['name']}.period") : '' }}"
+                        value="{{ $Data->value($array['name'] - 1 . '.phase_duration') != 0 ? $Data->value($array['name'] - 1 . '.phase_duration') : '' }}"
                         aria-describedby="PeriodUnit_{{ $array['id'] }}" style="font-size:15">
                     <span class="input-group-text form-control col-4 bg-light"
                         id="PeriodUnit_{{ $array['id'] }}">Months</span>
                 </div>
             </div>
+
             <div id="virtual_machine_{{ $array['name'] }}">
                 <input type="hidden" name="{{ $array['name'] }}[count_of_virtual_machine]"
-                    id="count_of_virtual_machine_{{ $array['name'] }}"
-                    value="{{ intval($Data->value("{$array['name']}.count_of_virtual_machine")) }}">
-                @if ($Data->value("{$array['name']}.count_of_virtual_machine") > 0)
-                    @for ($i = 1; $i <= $Data->value("{$array['name']}.count_of_virtual_machine"); $i++)
-                        @include('layouts.virtual-machine', [
-                            'name' => $array['name'],
-                            'id' => $array['name'] . $i,
-                            'list_id' => $prod_list,
-                            'Data' => $Data,
-                        ])
-                    @endfor
+                    id="count_of_virtual_machine_{{ $array['name'] }}" value="{{ $Data->count('is_special', 'vm') }}">
+                @if ($Data->value($array['name'] - 1, []) != 0 && isset($Data->value($array['name'] - 1, [])['groups']))
+                    @foreach ($Data->value($array['name'] - 1, [])['groups'] as $group)
+                        @if ($group['is_special'] == 'vm' && !empty($group['products']))
+                            @include('layouts.virtual-machine', [
+                                'name' => $array['name'],
+                                'id' => $array['name'] . $group['id'],
+                                'list_id' => $prod_list,
+                                'Data' => $Data,
+                            ])
+                        @endif
+                    @endforeach
                 @endif
             </div>
 
             <div id="block-storage_{{ $array['name'] }}">
                 <input type="hidden" name="{{ $array['name'] }}[count_of_block_storage]"
                     id="count_of_block_storage_{{ $array['name'] }}"
-                    value="{{ intval($Data->value("{$array['name']}.count_of_block_storage")) }}">
-                @if ($Data->value("{$array['name']}.count_of_block_storage") > 0)
-                    @for ($i = 1; $i <= $Data->value("{$array['name']}.count_of_block_storage"); $i++)
+                    value="{{ intval($Data->value($array['name'] - 1 . 'count_of_block_storage')) }}">
+                @if ($Data->value($array['name'] - 1 . 'count_of_block_storage') > 0)
+                    @for ($i = 1; $i <= $Data->value($array['name'] - 1 . 'count_of_block_storage'); $i++)
                         @include('layouts.block-storage', [
                             'name' => $array['name'],
                             'id' => $array['name'] . $i,
@@ -91,29 +95,23 @@
                     @endfor
                 @endif
             </div>
-            @if ($Data->value("{$array['name']}", []) != 0)
+            {{-- {{ $Data->count('is_special', 'vm') }} --}}
 
-                @if (!empty($Data->value("{$array['name']}", [])) || gettype($Data->value("{$array['name']}", [])) != 'string')
-                    @foreach ($Data->value("{$array['name']}", []) as $category => $arr)
-                        @php
-                            if (preg_match('/vm|strg_[1-9]/', $category) || !is_array($arr)) {
-                                continue;
-                            }
 
-                            $id = $array['id'];
-                            $name = $array['name'];
-                        @endphp
-                        @if (!empty($arr))
-                            @include('components.product-group', [
-                                'id' => $array['id'],
-                                'name' => $array['name'],
-                                'category' => $category,
-                                'arr' => $arr,
-                                'Data' => $Data,
-                            ])
-                        @endif
-                    @endforeach
-                @endif
+            @if ($Data->value($array['name'] - 1, []) != 0 && isset($Data->value($array['name'] - 1, [])['groups']))
+                @foreach ($Data->value($array['name'] - 1, [])['groups'] as $group)
+                    @if ($group['is_special'] == '' && !empty($group['products']))
+                        {{-- @PRE($group) --}}
+                        @include('components.product-group', [
+                            'id' => $array['name'] . '1',
+                            'name' => $array['name'],
+                            'category' => strtolower($group['group_name']),
+                            'arr' => $group['products'],
+                            'Data' => $Data,
+                            'group_id' => $group['id'],
+                        ])
+                    @endif
+                @endforeach
             @endif
         </div>
     </div>

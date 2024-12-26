@@ -1,6 +1,7 @@
 @extends('layouts.main-layout')
 
 @section('main')
+    {{-- @PRE(json_encode($Data->all(), JSON_PRETTY_PRINT)) --}}
     @include('components.content-header', [
         'array' => ['Estimate' => route('Estimate')],
     ])
@@ -21,8 +22,7 @@
                 @endforeach
             </div>
             <div class="mytabs my-2 accent-blue" id="myTab">
-                <input type="hidden" name="count_of_est" id="count_of_est"
-                    value="{{ empty($Data->value('count_of_est')) ? 1 : $Data->value('count_of_est') }}">
+                <input type="hidden" name="count_of_est" id="count_of_est" value="{{ $Data?->count() ?? 1 }}">
 
                 @include('layouts.estmt-tab', [
                     'array' => ['name' => 1, 'id' => 1 . '1', 'type' => ''],
@@ -31,8 +31,8 @@
                     'Data' => $Data,
                 ])
 
-                @if ($Data->value('count_of_est') > 1)
-                    @for ($i = 1; $i < $Data->value('count_of_est'); $i++)
+                @if ($Data->count() > 1)
+                    @for ($i = 1; $i < $Data?->count(); $i++)
                         @include('layouts.estmt-tab', [
                             'array' => ['name' => $i, 'id' => $i . '1', 'type' => 'ajax'],
                             'prod_list' => $prod_list,

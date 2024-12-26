@@ -1,9 +1,10 @@
+<link rel="stylesheet" href="{{ asset('assets/dist/css/collapsible-table.css') }}">
 @foreach ($Data as $Arr)
     <div class="container-fluid card-box my-2" id="container_{{ $loop->index }}">
         <div class="header row  p-0 m-0" data-target="tableContainer-{{ $loop->index }}">
             <div class="px-2">
-                <h2 class="project_name" data-parent="container_{{ $loop->index }}">{{ $Arr['project_name'] }}</h2>
-                <div style="color: #777; font-size: 12px;">
+                <div class="project_name h5" data-parent="container_{{ $loop->index }}">{{ $Arr['project_name'] }}</div>
+                <div style="color: #e5b7b7; font-size: 12px;">
                     {{ $Arr['pot_id'] }}
                 </div>
             </div>
@@ -22,7 +23,7 @@
         <div class="table-container mt-3" id="tableContainer-{{ $loop->index }}" style="overflow-x: auto;">
             @include('components.data-table-format', [
                 'Header' => $Header['child_body'],
-                'Dat    a' => $Arr['child_body'],
+                'Data' => $Arr['child_body'],
                 'searchable' => [
                     'key' => '',
                     'class' => '',
@@ -33,57 +34,6 @@
     </div>
 @endforeach
 
-
-<style>
-    .card-box {
-        background-color: #fff;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 16px;
-        box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-
-    /* Header Section */
-    .header {
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        transition: background-color 0.3s ease-in-out;
-    }
-
-    .header h2 {
-        margin: 0;
-        font-size: 18px;
-        color: #333;
-        transition: color 0.3s ease-in-out;
-    }
-
-    .arrow-icon i {
-        transition: transform 0.4s ease-in-out;
-        /* Smooth rotation */
-    }
-
-    .arrow-icon i.rotate {
-        transform: rotate(180deg);
-    }
-
-    /* Table Animation */
-    .table-container {
-        display: none;
-        opacity: 0;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
-    }
-
-    .table-container.show {
-        display: block;
-        max-height: 1000px;
-        opacity: 1;
-    }
-</style>
 
 
 <script>

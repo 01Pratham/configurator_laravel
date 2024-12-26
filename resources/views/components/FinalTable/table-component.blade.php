@@ -63,19 +63,21 @@
                                 ],
                             ])
                         @else
-                            @foreach ($val as $_K => $_V)
-                                @include('components.FinalTable.table-row-component', [
-                                    'arr' => $_V,
-                                    'keys' => [
-                                        'Class' => $Class,
-                                        'KEY' => $KEY,
-                                        '_K' => $Key,
-                                        '_k' => $key,
-                                        '__k' => $_K,
-                                    ],
-                                    'rowspan' => $_K == 'vcore' ? 'rowspan = 3' : 'hidden',
-                                ])
-                            @endforeach
+                            @if (is_array($val))
+                                @foreach ($val as $_K => $_V)
+                                    @include('components.FinalTable.table-row-component', [
+                                        'arr' => $_V,
+                                        'keys' => [
+                                            'Class' => $Class,
+                                            'KEY' => $KEY,
+                                            '_K' => $Key,
+                                            '_k' => $key,
+                                            '__k' => $_K,
+                                        ],
+                                        'rowspan' => $_K == 'vcore' ? 'rowspan = 3' : 'hidden',
+                                    ])
+                                @endforeach
+                            @endif
                         @endif
                     @endforeach
                 @endif

@@ -23,7 +23,15 @@ use App\Http\Middleware\StoreActivityLogs;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\admin\TablesActionController;
 use App\Http\Controllers\admin\TablesDataController;
+use App\Http\Middleware\CheckSession;
 use Illuminate\Http\Request;
+
+Route::prefix("Save")->group(function () {
+    Route::prefix("Estimate")->group(function () {
+        Route::post("/", [EstimateActionsController::class, "index"])->name("InsertEstimate");
+        Route::post("/{id?}", [EstimateActionsController::class, "index"])->name("UpdateEstimate");
+    });
+});
 
 Route::prefix("Admin")->group(function () {
     Route::get("/Dashboard", [AdminDashboard::class, "index"])->name("AdminDashboard");
@@ -34,6 +42,9 @@ Route::prefix("Admin")->group(function () {
     Route::post("/Action/{table_name}/{id}/Update", [TablesActionController::class, "Update"])->name("AdminTableUpdateAction");
     Route::post("/Action/{table_name}/{id}/Delete", [TablesActionController::class, "Delete"])->name("AdminTableDeleteAction");
 });
+
+
+
 
 Route::middleware([StoreActivityLogs::class])->group(function () {
 
@@ -46,7 +57,7 @@ Route::middleware([StoreActivityLogs::class])->group(function () {
 
     Auth::routes();
 
-    Route::middleware(['web', "check.session"])->group(function () {
+    Route::middleware([CheckSession::class])->group(function () {
         Route::get('/Dashboard', [DashboardController::class, 'index'])->name('Dashboard');
         Route::get('/SavedEstimates/{_id?}', [SavedQuotationController::class, 'index'])->name('SavedEstimates');
         Route::get('/CreateNew/{_id?}', [CreateNewController::class, 'index'])->name('CreateNew');
@@ -84,13 +95,6 @@ Route::middleware([StoreActivityLogs::class])->group(function () {
             Route::post("GeneratePDF", [generatePDFcontroller::class, "GeneratePDF"])->name("GeneratePDFAjax");
             Route::post("DeletePDF", [generatePDFcontroller::class, "deletePDF"])->name("DeletePDFAjax");
             Route::post("PushToCRM", [PushToCRMController::class, "index"])->name("Push");
-        });
-
-        Route::prefix("Save")->group(function () {
-            Route::prefix("Estimate")->group(function () {
-                Route::post("Update", [EstimateActionsController::class, "UpdateEstimate"])->name("UpdateEstimate");
-                Route::post("Insert", [EstimateActionsController::class, "CreateEstimate"])->name("InsertEstimate");
-            });
         });
     });
 });

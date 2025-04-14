@@ -24,7 +24,7 @@ class QuotationPhaseMaster extends Model
 
     public function groups()
     {
-        return $this->hasMany(QuotationGroupMaster::class, 'phase_id');
+        return $this->hasMany(QuotationGroupMaster::class, 'phase_id')->where('is_deleted', 0);
     }
 
     public function quotation()

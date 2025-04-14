@@ -28,7 +28,7 @@ class QuotationGroupMaster extends Model
      */
     public function items()
     {
-        return $this->hasMany(QuotationProductMaster::class, 'group_id');
+        return $this->hasMany(QuotationProductMaster::class, 'group_id')->where('is_deleted', 0);
     }
 
     /**

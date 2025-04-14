@@ -46,7 +46,7 @@ class FinalQuotationController extends Controller
 
 
         $this->ArrManipulate($this->Request, $Result, $Total, $Sku_Data);
-        // return response()->json($Result);
+        return response()->json($Result);
 
         $this->UpdateResultDiscount($Result);
         // try {

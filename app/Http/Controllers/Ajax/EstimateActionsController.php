@@ -74,42 +74,51 @@ class EstimateActionsController extends Controller
     }
     private function processData($data, $project, $user_id, $total_mrc, $total_otc)
     {
-        foreach ($data as $key => $val) {
+        $phaseIdsInRequest = [];
+        foreach ($data as $val) {
             if (is_array($val)) {
                 $quotations = $this->CreateOrUpdateQuotation($project, $data, $user_id, $total_mrc, $total_otc);
                 foreach ($val as $phaseData) {
                     if (is_array($phaseData)) {
                         try {
                             $phase = $this->CreateOrUpdatePhase($quotations, $phaseData, $user_id);
+                            $phaseIdsInRequest[] = $phase->id;
                         } catch (\Exception $e) {
                             throw new Error(json_encode([$e->getMessage(), $phaseData, $e->getLine()]));
                         }
                         if (isset($phaseData["groups"])) {
+                            $groupIdsInRequest = [];
                             foreach ($phaseData["groups"] as $groupKey => $groupData) {
                                 if (is_array($groupData)) {
                                     try {
                                         $group = $this->CreateOrUpdateGroup($phase, $groupKey, $groupData, $user_id);
+                                        $groupIdsInRequest[] = $group->id;
                                     } catch (\Exception $e) {
                                         throw new Error(json_encode([$e->getMessage(), $groupData, $e->getLine()]));
                                     }
                                     if (isset($groupData["products"])) {
+                                        $itemIdsInRequest = [];
                                         foreach ($groupData["products"] as $itemKey => $itemData) {
                                             if (is_array($itemData)) {
                                                 try {
-                                                    $this->CreateOrUpdateItem($group, $itemKey, $itemData, $user_id);
+                                                    $item = $this->CreateOrUpdateItem($group, $itemKey, $itemData, $user_id);
+                                                    $itemIdsInRequest[] = $item->id;
                                                 } catch (\Exception $e) {
                                                     throw new Error(json_encode([$e->getMessage(), $itemData, $e->getLine()]));
                                                 }
                                             }
                                         }
+                                        $group->items()->whereNotIn('id', $itemIdsInRequest)->update(['is_deleted' => 1]);
                                     }
                                 }
                             }
+                            $phase->groups()->whereNotIn('id', $groupIdsInRequest)->update(['is_deleted' => 1]);
                         }
                     }
                 }
             }
         }
+        $quotations->phases()->whereNotIn('id', $phaseIdsInRequest)->update(['is_deleted' => 1]);
         return $quotations;
     }
 
@@ -207,17 +216,6 @@ class EstimateActionsController extends Controller
 
     private function CreateOrUpdateItem($group, $itemKey, $itemData, $user_id)
     {
-        // foreach ($groupData as $itemData) {
-        //     if (isset($itemData["prod_int"])) {
-        //         // if (is_array($itemData["prod_int"])) {
-        //         //     $this->handleVmItems($group, $itemData, $user_id);
-        //         // } else {
-        //         //     $this->createItemEntry($group, $itemData, $user_id);
-        //         // }
-        //         $this->createItemEntry($group, $itemData, $user_id);
-        //     }
-        // }
-
         $exitsted_product = $group->items()
             ->select("tbl_quotation_product_master.*")
             ->join("tbl_product_list", "tbl_product_list.id", "=", "tbl_quotation_product_master.product_id")

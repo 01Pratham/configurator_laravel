@@ -109,7 +109,8 @@
                     @endif
                 @endif
                 @if ($edit_id)
-                    <button class="btn btn-outline-danger btn-lg mx-1 save" id="Update">
+                    <button class="btn btn-outline-danger btn-lg mx-1 save" id="Update"
+                        data-edit_id="{{ $edit_id }}">
                         <i class="fa fa-sync pr-2"></i>
                         Update
                     </button>
@@ -123,7 +124,7 @@
                         </button>
                     </form>
                 @else
-                    <button class="btn btn-outline-danger btn-lg mx-1 save" id="Insert">
+                    <button class="btn btn-outline-danger btn-lg mx-1 save" id="Insert" data-edit_id="">
                         <i class="fas fa-save pr-2"></i>
                         Save
                     </button>
@@ -280,7 +281,7 @@
         @endif
 
 
-        function saveToDb(act, ty = "btn") {
+        function saveToDb(act = "", ty = "btn") {
             $.ajax({
                 headers: {
                     "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
@@ -308,11 +309,11 @@
             if ($(this).prop("id") == "save") {
                 $("#loader").removeAttr("hidden");
             }
-            saveToDb($(this).prop("id"));
+            saveToDb($(this).data("edit_id"));
         })
 
         @if ($edit_id)
-            saveToDb("Update", "auto");
+            saveToDb({{ $edit_id }}, "auto");
         @endif
 
 

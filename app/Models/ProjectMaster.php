@@ -20,6 +20,6 @@ class ProjectMaster extends Model
 
     public function quotations()
     {
-        return $this->hasMany(ProjectQuotationMaster::class, "project_id");
+        return $this->hasMany(ProjectQuotationMaster::class, "project_id")->where('is_deleted', 0);
     }
 }

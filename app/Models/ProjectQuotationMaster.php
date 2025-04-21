@@ -35,7 +35,7 @@ class ProjectQuotationMaster extends Model
     use HasFactory;
     public function phases()
     {
-        return $this->hasMany(QuotationPhaseMaster::class, 'quotation_id');
+        return $this->hasMany(QuotationPhaseMaster::class, 'quotation_id')->where('is_deleted', 0);
     }
 
     public function project()

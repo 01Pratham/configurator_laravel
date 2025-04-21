@@ -1,9 +1,9 @@
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 @php
     $files = [
+        'https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback',
+        'https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback',
+        'https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css',
+        'https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css',
         'assets/dist/css/adminlte.min.css',
         'assets/dist/css/adminlte.min.css',
         'assets/plugins/fontawesome-free/css/all.min.css',
@@ -16,5 +16,5 @@
 @endphp
 
 @foreach ($files as $file)
-    <link rel="stylesheet" href="{{ asset($file) }}">
+    <link rel="stylesheet" href="{{ asset($file) ?? $file }}">
 @endforeach

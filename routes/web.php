@@ -24,16 +24,23 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\admin\TablesActionController;
 use App\Http\Controllers\admin\TablesDataController;
 use App\Http\Middleware\CheckSession;
+use App\Models\UiOption;
 use Illuminate\Http\Request;
 
 Route::prefix("Save")->group(function () {
     Route::prefix("Estimate")->group(function () {
-        Route::post("/", [EstimateActionsController::class, "index"])->name("InsertEstimate");
+        // Route::post("/", [EstimateActionsController::class, "index"])->name("InsertEstimate");
+        // Route::post("/", function () {
+        //     return response()->json(["message" => UiOption::all()->toArray()]);
+        // })->name("InsertEstimate");
         Route::post("/{id?}", [EstimateActionsController::class, "index"])->name("UpdateEstimate");
     });
 });
 
 Route::prefix("Admin")->group(function () {
+    Route::get("/test", function () {
+        return response()->json(["message" => UiOption::all()->toArray()]);
+    });
     Route::get("/Dashboard", [AdminDashboard::class, "index"])->name("AdminDashboard");
     Route::get("/Table/{table_name}", [TablesDataController::class, "index"])->name("TableData");
     Route::post("/Table/{table_name}/Create", [TablesActionController::class, "Create"])->name("AdminTableActionCreate");

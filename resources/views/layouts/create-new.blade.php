@@ -4,9 +4,6 @@
     @include('components.content-header', [
         'array' => ['Create New' => route('SavedEstimates')],
     ])
-
-
-
     <div class="except container mt-2">
         <div class="Errors except"></div>
         <section id="create_Main" class="light rounded">

@@ -42,7 +42,7 @@ class QuotationProductMaster extends Model
      */
     public function product()
     {
-        return $this->belongsTo(ProductList::class, 'product_id', 'id');
+        return $this->belongsTo(ProductList::class, 'product_id', 'id')->where('is_deleted', 0);
     }
 
     /**
